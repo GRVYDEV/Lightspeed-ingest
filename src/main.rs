@@ -3,7 +3,7 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use std::net::UdpSocket;
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:8084").unwrap();
+    let listener = TcpListener::bind("0.0.0.0:8084").unwrap();
     println!("Listening on port 8084");
     for stream in listener.incoming() {
         println!("Connection recieved");
