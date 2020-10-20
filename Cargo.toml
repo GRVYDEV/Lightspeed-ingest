@@ -1,5 +1,5 @@
 [package]
-name = "ftl-ingest"
+name = "brime-ftl-plugin"
 version = "0.1.0"
 authors = ["Garrett Graves <gravesg57@gmail.com>"]
 edition = "2018"
