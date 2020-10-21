@@ -9,11 +9,9 @@ fn main() {
     for stream in listener.incoming() {
         println!("Connected");
 
-        thread::spawn(| | {
-            match stream{
-                Ok(stream) => { handle_connection(stream)}
-                Err(Error) => println!("Error")
-            }
+        thread::spawn(|| match stream {
+            Ok(stream) => handle_connection(stream),
+            Err(Error) => println!("Error"),
         });
         // match stream{
         //     Ok((socket, addr)) => {
@@ -33,6 +31,7 @@ fn main() {
 }
 
 fn handle_connection(mut stream: TcpStream) {
+    println!("Sender addr: {:?}", stream.peer_addr());
     let mut buffer = [0; 1024];
 
     stream.read(&mut buffer).unwrap();
