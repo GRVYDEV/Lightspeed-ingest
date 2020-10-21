@@ -37,4 +37,10 @@ fn handle_connection(mut stream: TcpStream) {
     stream.read(&mut buffer).unwrap();
 
     println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
+    println!("Writing");
+    let res = stream.write_all(b"test");
+    match res {
+        Ok(var) => println!("Success {:?}", var),
+        Err(err) => println!("there was an error {:?}", err),
+    }
 }
