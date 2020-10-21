@@ -6,7 +6,10 @@ fn main() {
     let listener = TcpListener::bind("10.10.0.5:8084").unwrap();
     println!("Listening on port 8084");
     match listener.accept() {
-        Ok((socket, addr)) => println!("new client: {:?} stream {:?}", addr, socket),
+        Ok((socket, addr)) => {
+            println!("new client: {:?} stream {:?}", addr, socket);
+            handle_connection(socket)
+        }
         Err(e) => println!("couldn't get client: {:?}", e),
     }
 
