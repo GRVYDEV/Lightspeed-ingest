@@ -5,10 +5,10 @@ use tokio::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut listener = TcpListener::bind("10.10.0.5:8084").await?;
+    let mut listener = TcpListener::bind("10.10.0.2:8084").await?;
 
     loop {
-        let (mut socket, _) = listener.accept().await?;
+        let (socket, _) = listener.accept().await?;
 
         handle_connection( socket).await;
     }
