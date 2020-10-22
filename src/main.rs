@@ -22,7 +22,7 @@ async fn handle_connection(mut stream: TcpStream) {
         let mut buffer = [0; 1024];
 
         match stream.read(&mut buffer).await {
-            Ok(var) => println!("Success {:?}", String::from_utf8_lossy(&buffer[..]),
+            Ok(var) => println!("Success {:?}", String::from_utf8_lossy(&buffer[..])),
             Err(err) => println!("there was an error {:?}", err),
         };
     });
