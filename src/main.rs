@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let (socket, _) = listener.accept().await?;
 
-        handle_connection( socket).await;
+        handle_connection(socket).await;
     }
 }
 
@@ -22,7 +22,7 @@ async fn handle_connection(mut stream: TcpStream) {
         let mut buffer = [0; 1024];
 
         match stream.read(&mut buffer).await {
-            Ok(var) => println!("Success {:?}", var),
+            Ok(var) => println!("Success {:?}", String::from_utf8_lossy(&buffer[..]),
             Err(err) => println!("there was an error {:?}", err),
         };
     });
