@@ -46,6 +46,8 @@ fn handle_message(message: &[u8], bytes_read: &usize) {
                     let mut command = String::from_utf8_lossy(&command_slice).to_string();
                     command.truncate(command.len() - 4);
                     println!("Command: {:?}", command);
+                    delimiter_characters = 0;
+                    command_buffer = Vec::new();
                 }
             }
         }
