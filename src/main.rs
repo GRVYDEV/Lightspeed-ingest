@@ -1,6 +1,7 @@
 mod ftl_codec;
 use bytes::{Buf, BufMut, BytesMut};
 use ftl_codec::*;
+use futures::stream::TryStreamExt;
 use futures::{stream, SinkExt, StreamExt};
 use hex::encode;
 use rand::distributions::Uniform;
@@ -31,7 +32,7 @@ async fn handle_connection(mut stream: TcpStream) {
             Some(result) => match result {
                 Ok(command) => {
                     println!("Command was {:?}", command);
-                    handle_command(command, &mut frame);
+                    handle_command(command, &mut frame).await;
                     return;
                 }
                 Err(e) => {
@@ -53,11 +54,13 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             println!("Handling HMAC Command");
             let hmac = generate_hmac();
             println!("payload generated {:?}", hmac);
-            let stream = ["200 ", hmac.as_str(), "/n"];
-            match frame
-                .send_all(&mut stream::iter(stream.iter()).map(|x| Ok(x)))
-                .await
-            {
+            let mut resp: Vec<String> = Vec::new();
+            resp.push("200 ".to_string());
+            resp.push(hmac);
+            resp.push("/n".to_string());
+            let iter = resp.into_iter();
+            let mut stream: futures_util::stream::Map<_, _> = stream::iter(iter).map(|x| Ok(x));
+            match frame.send_all(&mut stream).await {
                 Ok(_) => {
                     println!("hmac sent");
                     return;

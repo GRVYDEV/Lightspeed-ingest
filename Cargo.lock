@@ -18,6 +18,7 @@ version = "0.1.0"
 dependencies = [
  "bytes 0.5.6",
  "futures",
+ "futures-util",
  "hex",
  "rand",
  "tokio",
