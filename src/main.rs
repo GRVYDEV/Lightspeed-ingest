@@ -1,6 +1,6 @@
 mod ftl_codec;
+use bytes::{Buf, BufMut, BytesMut};
 use ftl_codec::*;
-
 use tokio::net::TcpListener;
 use tokio::net::TcpStream;
 use tokio::prelude::*;
@@ -23,10 +23,15 @@ async fn handle_connection(mut stream: TcpStream) {
         // In a loop, read data from the socket and write the data back.
 
         println!("Sender addr: {:?}", stream.peer_addr().unwrap());
-        let mut buffer = bytes::BytesMut::with_capacity(1024);
+        let mut buffer = [0; 1024];
+        let mut bytes = bytes::BytesMut::with_capacity(1024);
 
         match stream.read(&mut buffer).await {
-            Ok(var) => {println!("bytes read {:?}", var); handle_message(&mut buffer, var)},
+            Ok(var) => {
+                println!("bytes read {:?}", var);
+                bytes.put_slice(&buffer);
+                handle_message(&mut bytes, var)
+            }
             Err(err) => println!("There was a socket reading error {:?}", err),
         };
     });
