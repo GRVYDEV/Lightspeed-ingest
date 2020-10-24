@@ -58,12 +58,29 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             resp.push("200 ".to_string());
             resp.push(hmac);
             resp.push("/n".to_string());
-            let iter = resp.into_iter();
-            let mut stream: futures_util::stream::Map<_, _> = stream::iter(iter).map(|x| Ok(x));
-            match frame.send_all(&mut stream).await {
+            
+            
+            match frame.send(&mut resp.get_mut(0).unwrap()).await {
                 Ok(_) => {
-                    println!("hmac sent");
+                    println!("200 sent");
+                }
+                Err(e) => {
+                    println!("There was an error {:?}", e);
                     return;
+                }
+            };
+            match frame.send(&mut resp.get_mut(1).unwrap()).await {
+                Ok(_) => {
+                    println!("HMAC sent");
+                }
+                Err(e) => {
+                    println!("There was an error {:?}", e);
+                    return;
+                }
+            };
+            match frame.send(&mut resp.get_mut(2).unwrap()).await {
+                Ok(_) => {
+                    println!("/n sent");
                 }
                 Err(e) => {
                     println!("There was an error {:?}", e);
