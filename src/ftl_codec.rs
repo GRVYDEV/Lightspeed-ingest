@@ -69,6 +69,19 @@ impl Decoder for FtlCodec {
         }
     }
 }
+impl<T> Encoder<T> for FtlCodec
+where
+    T: AsRef<str>,
+{
+    type Error = FtlError;
+
+    fn encode(&mut self, line: T, buf: &mut BytesMut) -> Result<(), FtlError> {
+        let line = line.as_ref();
+        buf.reserve(line.len());
+        buf.put(line.as_bytes());
+        Ok(())
+    }
+}
 #[derive(Debug)]
 pub enum FtlError {
     ConnectionClosed,
