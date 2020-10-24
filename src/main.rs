@@ -26,7 +26,7 @@ async fn handle_connection(mut stream: TcpStream) {
         let mut buffer = bytes::BytesMut::with_capacity(1024);
 
         match stream.read(&mut buffer).await {
-            Ok(var) => handle_message(&mut buffer, var),
+            Ok(var) => {println!("bytes read {:?}", var); handle_message(&mut buffer, var)},
             Err(err) => println!("There was a socket reading error {:?}", err),
         };
     });
