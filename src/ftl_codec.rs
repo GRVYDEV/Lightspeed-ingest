@@ -12,14 +12,13 @@ pub enum Command {
 }
 #[derive(Debug)]
 pub struct FtlCommand {
-    command: Command,
-    data: Option<BytesMut>,
+    pub command: Command,
+    pub data: Option<BytesMut>,
 }
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct FtlCodec {
     delimiter_chars_read: usize,
     command_buffer: std::vec::Vec<u8>,
-    bytes_read: usize,
 }
 
 impl FtlCommand {
@@ -28,16 +27,14 @@ impl FtlCommand {
     }
 }
 impl FtlCodec {
-    pub fn new(bytes_read: usize) -> FtlCodec {
+    pub fn new() -> FtlCodec {
         FtlCodec {
             delimiter_chars_read: 0,
             command_buffer: Vec::new(),
-            bytes_read,
         }
     }
 
     pub fn reset(&mut self, bytes_read: usize) {
-        self.bytes_read = bytes_read;
         self.command_buffer = Vec::new();
         self.delimiter_chars_read = 0;
     }
@@ -47,7 +44,7 @@ impl Decoder for FtlCodec {
     type Item = FtlCommand;
     type Error = FtlError;
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<FtlCommand>, FtlError> {
-        match self.bytes_read {
+        match buf.len() {
             0 => Err(FtlError::ConnectionClosed),
             _ => {
                 let mut command: String;
