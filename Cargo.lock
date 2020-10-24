@@ -16,7 +16,7 @@ checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 name = "brime-ftl-plugin"
 version = "0.1.0"
 dependencies = [
- "bytes 0.6.0",
+ "bytes 0.5.6",
  "tokio",
  "tokio-util",
 ]
