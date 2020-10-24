@@ -1,4 +1,6 @@
-use tokio::io;
+mod ftl_codec;
+use ftl_codec::*;
+
 use tokio::net::TcpListener;
 use tokio::net::TcpStream;
 use tokio::prelude::*;
