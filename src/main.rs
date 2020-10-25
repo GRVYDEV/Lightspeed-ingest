@@ -78,13 +78,13 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             match frame.send(&mut resp.get_mut(2).unwrap()).await {
                 Ok(_) => {
                     println!("/n sent");
+                    return;
                 }
                 Err(e) => {
                     println!("There was an error {:?}", e);
                     return;
                 }
             }
-            frame.codec_mut().reset();
         }
         _ => {
             println!("Command not implemented yet. Tell GRVY to quit his day job");

@@ -58,8 +58,14 @@ impl Decoder for FtlCodec {
                             command.truncate(command.len() - 4);
                             println!("Command is: {:?}", command);
                             match command.as_str() {
-                                "HMAC" => return Ok(Some(FtlCommand::new(Command::HMAC, None))),
-                                _ => return Err(FtlError::Unsupported(command)),
+                                "HMAC" => {
+                                    self.reset();
+                                    return Ok(Some(FtlCommand::new(Command::HMAC, None)));
+                                }
+                                _ => {
+                                    self.reset();
+                                    return Err(FtlError::Unsupported(command));
+                                }
                             }
                         }
                     }
