@@ -44,37 +44,24 @@ impl Decoder for FtlCodec {
     type Item = FtlCommand;
     type Error = FtlError;
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<FtlCommand>, FtlError> {
-        match buf.len() {
-            0 => Err(FtlError::ConnectionClosed),
-            _ => {
-                let mut command: String;
-                for i in 0..buf.bytes().len() {
-                    self.command_buffer.push(buf.bytes()[i - 1]);
-                    buf.advance(1);
-                    if buf[i] as char == COMMAND_DELIMITERS[self.delimiter_chars_read] {
-                        self.delimiter_chars_read += 1;
-                        if self.delimiter_chars_read >= COMMAND_DELIMITERS.len() {
-                            command = String::from_utf8_lossy(&self.command_buffer.as_slice())
-                                .to_string();
-                            command.truncate(command.len() - 4);
-                            println!("Command is: {:?}", command);
-                            match command.as_str() {
-                                "HMAC" => {
-                                    self.reset();
-                                   
-                                    return Ok(Some(FtlCommand::new(Command::HMAC, None)));
-                                }
-                                _ => {
-                                    self.reset();
-                                    return Err(FtlError::Unsupported(command));
-                                }
-                            }
-                        }
+        let mut command: String;
+        match buf.windows(4).position(|window| window == b"\r\n\r\n") {
+            Some(index) => {
+                command = String::from_utf8_lossy(&buf[..index]).to_string();
+                buf.advance(index + 4);
+                println!("Command is: {:?}", command);
+                match command.as_str() {
+                    "HMAC" => {
+                        self.reset();
+                        return Ok(Some(FtlCommand::new(Command::HMAC, None)));
+                    }
+                    _ => {
+                        self.reset();
+                        return Err(FtlError::Unsupported(command));
                     }
                 }
-             
-                Err(FtlError::CommandNotFound)
             }
+            None => return Ok(None),
         }
     }
 }

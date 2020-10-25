@@ -29,16 +29,14 @@ async fn handle_connection(mut stream: TcpStream) {
     let mut frame = Framed::new(stream, FtlCodec::new());
     loop {
         match frame.next().await {
-            Some(result) => match result {
-                Ok(command) => {
-                    println!("Command was {:?}", command);
-                    handle_command(command, &mut frame).await;
-                }
-                Err(e) => {
-                    println!("There was an error: {:?}", e);
-                    return;
-                }
-            },
+            Some(Ok(command)) => {
+                println!("Command was {:?}", command);
+                handle_command(command, &mut frame).await;
+            }
+            Some(Err(e)) => {
+                println!("There was an error {:?}", e);
+                return;
+            }
             None => {
                 println!("There was a socket reading error");
                 return;
