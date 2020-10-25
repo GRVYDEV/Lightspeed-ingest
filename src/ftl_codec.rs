@@ -49,7 +49,7 @@ impl Decoder for FtlCodec {
             _ => {
                 let mut command: String;
                 for i in 0..buf.bytes().len() {
-                    self.command_buffer.push(buf.bytes()[i]);
+                    self.command_buffer.push(buf.bytes()[i - 1]);
                     buf.advance(1);
                     if buf[i] as char == COMMAND_DELIMITERS[self.delimiter_chars_read] {
                         self.delimiter_chars_read += 1;
