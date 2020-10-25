@@ -34,7 +34,7 @@ impl FtlCodec {
         }
     }
 
-    pub fn reset(&mut self, bytes_read: usize) {
+    pub fn reset(&mut self) {
         self.command_buffer = Vec::new();
         self.delimiter_chars_read = 0;
     }

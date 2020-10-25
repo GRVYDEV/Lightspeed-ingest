@@ -57,8 +57,6 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             resp.push("200 ".to_string());
             resp.push(hmac);
             resp.push("\n".to_string());
-            
-            
             match frame.send(&mut resp.get_mut(0).unwrap()).await {
                 Ok(_) => {
                     println!("200 sent");
@@ -92,6 +90,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             return;
         }
     }
+    frame.codec_mut().reset();
 }
 
 fn generate_hmac() -> String {
