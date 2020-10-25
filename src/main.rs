@@ -46,6 +46,7 @@ async fn handle_connection(mut stream: TcpStream) {
             }
         };
     }
+    println!("Conn closed")
 }
 
 async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCodec>) {
@@ -57,7 +58,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             let mut resp: Vec<String> = Vec::new();
             resp.push("200 ".to_string());
             resp.push(hmac);
-            resp.push("/n".to_string());
+            resp.push("\n".to_string());
             
             
             match frame.send(&mut resp.get_mut(0).unwrap()).await {
