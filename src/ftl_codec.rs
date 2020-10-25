@@ -50,6 +50,7 @@ impl Decoder for FtlCodec {
                 let mut command: String;
                 for i in 0..buf.len() {
                     self.command_buffer.push(buf[i]);
+                    buf.advance(1);
                     if buf[i] as char == COMMAND_DELIMITERS[self.delimiter_chars_read] {
                         self.delimiter_chars_read += 1;
                         if self.delimiter_chars_read >= COMMAND_DELIMITERS.len() {
@@ -65,7 +66,6 @@ impl Decoder for FtlCodec {
                                 }
                                 _ => {
                                     self.reset();
-                                    buf.clear();
                                     return Err(FtlError::Unsupported(command));
                                 }
                             }
