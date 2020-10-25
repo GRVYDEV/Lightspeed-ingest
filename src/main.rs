@@ -33,7 +33,6 @@ async fn handle_connection(mut stream: TcpStream) {
                 Ok(command) => {
                     println!("Command was {:?}", command);
                     handle_command(command, &mut frame).await;
-                    frame.codec_mut().reset();
                 }
                 Err(e) => {
                     println!("There was an error: {:?}", e);
@@ -85,14 +84,13 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                     return;
                 }
             }
-            
+            frame.codec_mut().reset();
         }
         _ => {
             println!("Command not implemented yet. Tell GRVY to quit his day job");
             return;
         }
     }
-    
 }
 
 fn generate_hmac() -> String {
