@@ -33,7 +33,6 @@ async fn handle_connection(mut stream: TcpStream) {
                 Ok(command) => {
                     println!("Command was {:?}", command);
                     handle_command(command, &mut frame).await;
-                    return;
                 }
                 Err(e) => {
                     println!("There was an error: {:?}", e);
@@ -46,7 +45,6 @@ async fn handle_connection(mut stream: TcpStream) {
             }
         };
     }
-    println!("Conn closed")
 }
 
 async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCodec>) {
