@@ -60,16 +60,19 @@ impl Decoder for FtlCodec {
                             match command.as_str() {
                                 "HMAC" => {
                                     self.reset();
+                                    buf.clear();
                                     return Ok(Some(FtlCommand::new(Command::HMAC, None)));
                                 }
                                 _ => {
                                     self.reset();
+                                    buf.clear();
                                     return Err(FtlError::Unsupported(command));
                                 }
                             }
                         }
                     }
                 }
+                buf.clear();
                 Err(FtlError::CommandNotFound)
             }
         }

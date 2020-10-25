@@ -33,7 +33,6 @@ async fn handle_connection(mut stream: TcpStream) {
                 Ok(command) => {
                     println!("Command was {:?}", command);
                     handle_command(command, &mut frame).await;
-                    break;
                 }
                 Err(e) => {
                     println!("There was an error: {:?}", e);
