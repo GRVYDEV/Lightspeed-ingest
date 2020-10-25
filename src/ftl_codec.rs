@@ -48,8 +48,8 @@ impl Decoder for FtlCodec {
             0 => Err(FtlError::ConnectionClosed),
             _ => {
                 let mut command: String;
-                for i in 0..buf.len() {
-                    self.command_buffer.push(buf[i]);
+                for i in 0..buf.bytes().len() {
+                    self.command_buffer.push(buf.bytes()[i]);
                     buf.advance(1);
                     if buf[i] as char == COMMAND_DELIMITERS[self.delimiter_chars_read] {
                         self.delimiter_chars_read += 1;
