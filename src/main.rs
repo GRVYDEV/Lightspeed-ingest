@@ -56,16 +56,14 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             resp.push(hmac);
             resp.push("\n".to_string());
             match frame.send(&mut resp.get_mut(0).unwrap()).await {
-                Ok(_) => {
-                }
+                Ok(_) => {}
                 Err(e) => {
                     println!("There was an error {:?}", e);
                     return;
                 }
             };
             match frame.send(&mut resp.get_mut(1).unwrap()).await {
-                Ok(_) => {
-                }
+                Ok(_) => {}
                 Err(e) => {
                     println!("There was an error {:?}", e);
                     return;
@@ -77,6 +75,21 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                 }
                 Err(e) => {
                     println!("There was an error {:?}", e);
+                    return;
+                }
+            }
+        }
+        Command::Connect => {
+            println!("Handling Connect Command");
+            match command.data {
+                Some(data) => {
+                    println!("channel id: {:?}", data.get(&"channel_id".to_string()));
+                    println!("stream key: {:?}", data.get(&"stream_key".to_string()));
+                    return;
+                }
+
+                None => {
+                    println!("No data attached to connect command");
                     return;
                 }
             }
