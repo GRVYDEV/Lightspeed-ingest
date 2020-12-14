@@ -57,7 +57,6 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             resp.push("\n".to_string());
             match frame.send(&mut resp.get_mut(0).unwrap()).await {
                 Ok(_) => {
-                    println!("200 sent");
                 }
                 Err(e) => {
                     println!("There was an error {:?}", e);
@@ -66,7 +65,6 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             };
             match frame.send(&mut resp.get_mut(1).unwrap()).await {
                 Ok(_) => {
-                    println!("HMAC sent");
                 }
                 Err(e) => {
                     println!("There was an error {:?}", e);
@@ -75,7 +73,6 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             };
             match frame.send(&mut resp.get_mut(2).unwrap()).await {
                 Ok(_) => {
-                    println!("/n sent");
                     return;
                 }
                 Err(e) => {
@@ -95,7 +92,7 @@ fn generate_hmac() -> String {
     let dist = Uniform::new(0x00, 0xFF);
     let mut hmac_payload: Vec<u8> = Vec::new();
     let mut rng = thread_rng();
-    for i in 0..128 {
+    for _i in 0..128 {
         hmac_payload.push(rng.sample(dist));
     }
     encode(hmac_payload.as_slice())

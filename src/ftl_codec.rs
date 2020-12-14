@@ -1,4 +1,5 @@
 use bytes::{Buf, BufMut, BytesMut};
+use std::collections::HashMap;
 use std::{fmt, io};
 use tokio_util::codec::{Decoder, Encoder};
 const COMMAND_DELIMITERS: [char; 4] = ['\r', '\n', '\r', '\n'];
@@ -13,7 +14,7 @@ pub enum Command {
 #[derive(Debug)]
 pub struct FtlCommand {
     pub command: Command,
-    pub data: Option<BytesMut>,
+    pub data: Option<HashMap<String, String>>,
 }
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct FtlCodec {
@@ -22,7 +23,7 @@ pub struct FtlCodec {
 }
 
 impl FtlCommand {
-    pub fn new(command: Command, data: Option<BytesMut>) -> FtlCommand {
+    pub fn new(command: Command, data: Option<HashMap<String, String>>) -> FtlCommand {
         FtlCommand { command, data }
     }
 }
@@ -50,15 +51,20 @@ impl Decoder for FtlCodec {
                 command = String::from_utf8_lossy(&buf[..index]).to_string();
                 buf.advance(index + 4);
                 println!("Command is: {:?}", command);
-                match command.as_str() {
-                    "HMAC" => {
-                        self.reset();
-                        return Ok(Some(FtlCommand::new(Command::HMAC, None)));
-                    }
-                    _ => {
-                        self.reset();
-                        return Err(FtlError::Unsupported(command));
-                    }
+
+                if command.as_str().contains("HMAC") {
+                    self.reset();
+                    return Ok(Some(FtlCommand::new(Command::HMAC, None)));
+                } else if command.as_str().contains("CONNECT") {
+                    let commands: Vec<&str> = command.split(" ").collect();
+                    let mut data: HashMap<String, String> = HashMap::new();
+                    data.insert("channel_id".to_string(), commands[1].to_string());
+                    data.insert("stream_key".to_string(), commands[2].to_string());
+                    self.reset();
+                    return Ok(Some(FtlCommand::new(Command::Connect, Some(data))));
+                } else {
+                    self.reset();
+                    return Err(FtlError::Unsupported(command));
                 }
             }
             None => return Ok(None),
