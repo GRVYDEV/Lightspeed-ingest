@@ -2,7 +2,7 @@
 
 FTL ingest server that will be the starting point for a decentralized personal streaming server
 
-
+Ingest server derrived from https://github.com/Glimesh/janus-ftl-plugin
 # Plans
 
 - Easy installation
