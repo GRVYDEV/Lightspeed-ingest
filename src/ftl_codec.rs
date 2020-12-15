@@ -63,9 +63,11 @@ impl Decoder for FtlCodec {
                     return Ok(Some(FtlCommand::new(Command::HMAC, None)));
                 } else if command.as_str().contains("CONNECT") {
                     let commands: Vec<&str> = command.split(" ").collect();
+                    let mut key = commands[2].to_string();
+                    key.remove(0);
                     let mut data: HashMap<String, String> = HashMap::new();
                     data.insert("channel_id".to_string(), commands[1].to_string());
-                    data.insert("stream_key".to_string(), commands[2].to_string());
+                    data.insert("stream_key".to_string(), key);
                     self.reset();
                     return Ok(Some(FtlCommand::new(Command::Connect, Some(data))));
                 } else {
