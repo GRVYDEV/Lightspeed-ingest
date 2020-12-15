@@ -94,7 +94,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                     type HmacSha512 = Hmac<Sha512>;
 
                     let mut mac =
-                        HmacSha512::new_varkey(&client_hash.as_slice()).expect("some err");
+                        HmacSha512::new_varkey(b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456").expect("some err");
                     mac.update(
                         frame
                             .codec_mut()
