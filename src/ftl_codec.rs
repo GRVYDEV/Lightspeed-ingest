@@ -20,6 +20,7 @@ pub struct FtlCommand {
 pub struct FtlCodec {
     delimiter_chars_read: usize,
     command_buffer: std::vec::Vec<u8>,
+    pub hmac_payload: Option<String>,
 }
 
 impl FtlCommand {
@@ -32,12 +33,17 @@ impl FtlCodec {
         FtlCodec {
             delimiter_chars_read: 0,
             command_buffer: Vec::new(),
+            hmac_payload: None,
         }
     }
 
     pub fn reset(&mut self) {
         self.command_buffer = Vec::new();
         self.delimiter_chars_read = 0;
+    }
+
+    pub fn set_hmac(&mut self, payload: String) {
+        self.hmac_payload = Some(payload);
     }
 }
 

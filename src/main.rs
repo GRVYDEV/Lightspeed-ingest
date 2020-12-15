@@ -4,13 +4,15 @@ use ftl_codec::*;
 use futures::stream::TryStreamExt;
 use futures::{stream, SinkExt, StreamExt};
 use hex::encode;
+use hmac::{Hmac, Mac, NewMac};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
+use sha2::Sha512;
+use std::str;
 use tokio::net::TcpListener;
 use tokio::net::TcpStream;
 use tokio::prelude::*;
 use tokio_util::codec::{Decoder, Encoder, Framed};
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Listening on port 8084");
@@ -30,7 +32,7 @@ async fn handle_connection(mut stream: TcpStream) {
     loop {
         match frame.next().await {
             Some(Ok(command)) => {
-                println!("Command was {:?}", command);
+                // println!("Command was {:?}", command);
                 handle_command(command, &mut frame).await;
             }
             Some(Err(e)) => {
@@ -49,11 +51,14 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
     match command.command {
         Command::HMAC => {
             println!("Handling HMAC Command");
-            let hmac = generate_hmac();
-            println!("payload generated {:?}", hmac);
+            frame.codec_mut().set_hmac(generate_hmac());
+            println!(
+                "payload generated {:?}",
+                frame.codec().hmac_payload.clone().unwrap()
+            );
             let mut resp: Vec<String> = Vec::new();
             resp.push("200 ".to_string());
-            resp.push(hmac);
+            resp.push(frame.codec().hmac_payload.clone().unwrap());
             resp.push("\n".to_string());
             match frame.send(&mut resp.get_mut(0).unwrap()).await {
                 Ok(_) => {}
@@ -84,7 +89,27 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             match command.data {
                 Some(data) => {
                     println!("channel id: {:?}", data.get(&"channel_id".to_string()));
-                    println!("stream key: {:?}", data.get(&"stream_key".to_string()));
+                    type HmacSha512 = Hmac<Sha512>;
+
+                    let mut mac = HmacSha512::new_varkey(
+                        frame
+                            .codec_mut()
+                            .hmac_payload
+                            .clone()
+                            .unwrap()
+                            .into_bytes()
+                            .as_slice(),
+                    )
+                    .expect("some err");
+                    mac.update(b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
+                    let res = mac.finalize().into_bytes();
+                    let result = str::from_utf8(&res);
+                    println!(
+                        "client hash: {:?}",
+                        data.get(&"stream_key".to_string()).unwrap()
+                    );
+                    println!("server hash: {:?}", result);
+                    //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                     return;
                 }
 
