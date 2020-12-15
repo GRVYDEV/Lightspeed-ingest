@@ -88,7 +88,12 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             println!("Handling Connect Command");
             match command.data {
                 Some(data) => {
-                    println!("channel id: {:?}", data.get(&"channel_id".to_string()));
+                    let client_hash = data
+                        .get(&"channel_id".to_string())
+                        .unwrap()
+                        .clone()
+                        .into_bytes();
+                    println!("channel id: {:?}", &client_hash);
                     type HmacSha512 = Hmac<Sha512>;
 
                     let mut mac = HmacSha512::new_varkey(
@@ -102,13 +107,11 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                     )
                     .expect("some err");
                     mac.update(b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
-                    let res = mac.finalize().into_bytes();
-                    let result = str::from_utf8(&res.as_slice());
-                    println!(
-                        "client hash: {:?}",
-                        data.get(&"stream_key".to_string()).unwrap()
-                    );
-                    println!("server hash: {:?}", res.as_slice());
+                    // let res = mac.finalize().into_bytes();
+                    // let res_slice = res.as_slice();
+                    // let result = str::from_utf8(&res_slice);
+                    println!("client hash: {:?}", mac.verify(&client_hash.as_slice()));
+              
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                     return;
                 }
