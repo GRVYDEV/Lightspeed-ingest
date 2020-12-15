@@ -91,8 +91,8 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                     let mut client_hash = [0u8];
                     hex::decode_to_slice(
                         data.get(&"stream_key".to_string()).unwrap().clone(),
-                        &mut client_hash,
-                    );
+                        &mut client_hash as &mut [u8],
+                    ).expect("decode failed");
                     println!("client hash: {:?}", &client_hash);
                     type HmacSha512 = Hmac<Sha512>;
 
