@@ -93,7 +93,9 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                             .expect("error with decode");
                     type HmacSha512 = Hmac<Sha512>;
 
-                    let mut mac = HmacSha512::new_varkey(
+                    let mut mac =
+                        HmacSha512::new_varkey(&client_hash.as_slice()).expect("some err");
+                    mac.update(
                         frame
                             .codec_mut()
                             .hmac_payload
@@ -101,9 +103,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                             .unwrap()
                             .into_bytes()
                             .as_slice(),
-                    )
-                    .expect("some err");
-                    mac.update(b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
+                    );
                     let res = mac.finalize().into_bytes();
                     let res_slice = res.as_slice();
                     let result = str::from_utf8(&res_slice);
