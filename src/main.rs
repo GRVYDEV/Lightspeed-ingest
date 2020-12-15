@@ -93,8 +93,8 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                             .expect("error with decode");
                     type HmacSha512 = Hmac<Sha512>;
 
-                    let mut mac =
-                        HmacSha512::new_varkey(b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456").expect("some err");
+                    let mut mac = HmacSha512::new_varkey(b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456")
+                        .expect("some err");
                     mac.update(
                         frame
                             .codec_mut()
@@ -104,11 +104,12 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                             .into_bytes()
                             .as_slice(),
                     );
-                    let res = mac.finalize().into_bytes();
-                    let res_slice = res.as_slice();
-                    let result = str::from_utf8(&res_slice);
+                    // let res = mac.finalize().into_bytes();
+                    // let res_slice = res.as_slice();
+                    // let result = str::from_utf8(&res_slice);
                     println!("client hash: {:?}", &client_hash);
-                    println!("server hash {:?}", res_slice);
+                    println!("are they equal? {:?}", mac.verify(&client_hash));
+                    // println!("server hash {:?}", res_slice);
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                     return;
                 }
