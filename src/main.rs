@@ -3,7 +3,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use ftl_codec::*;
 use futures::stream::TryStreamExt;
 use futures::{stream, SinkExt, StreamExt};
-use hex::{decode_to_slice, encode};
+use hex::{decode, encode};
 use hmac::{Hmac, Mac, NewMac};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
@@ -88,11 +88,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             println!("Handling Connect Command");
             match command.data {
                 Some(data) => {
-                    let mut client_hash = [0u8];
-                    hex::decode_to_slice(
-                        data.get(&"stream_key".to_string()).unwrap().clone(),
-                        &mut client_hash as &mut [u8],
-                    ).expect("decode failed");
+                    let client_hash= hex::decode(data.get(&"stream_key".to_string()).unwrap().clone()).expect("error with decode");
                     println!("client hash: {:?}", &client_hash);
                     type HmacSha512 = Hmac<Sha512>;
 
@@ -110,7 +106,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                     // let res = mac.finalize().into_bytes();
                     // let res_slice = res.as_slice();
                     // let result = str::from_utf8(&res_slice);
-                    println!("Are the hashes equal {:?}", mac.verify(&client_hash));
+                    println!("Are the hashes equal {:?}", mac.verify(&client_hash.as_slice()));
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                     return;
                 }
