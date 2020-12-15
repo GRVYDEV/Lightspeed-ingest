@@ -108,7 +108,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                         "client hash: {:?}",
                         data.get(&"stream_key".to_string()).unwrap()
                     );
-                    println!("server hash: {:?}", result);
+                    println!("server hash: {:?}", res);
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                     return;
                 }
