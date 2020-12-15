@@ -103,12 +103,12 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                     .expect("some err");
                     mac.update(b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
                     let res = mac.finalize().into_bytes();
-                    let result = str::from_utf8(&res);
+                    let result = str::from_utf8(&res.as_slice());
                     println!(
                         "client hash: {:?}",
                         data.get(&"stream_key".to_string()).unwrap()
                     );
-                    println!("server hash: {:?}", res);
+                    println!("server hash: {:?}", result);
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                     return;
                 }
