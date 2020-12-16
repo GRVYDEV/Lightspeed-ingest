@@ -105,7 +105,9 @@ async fn handle_frame_command(
             let mut d: Vec<String> = data.clone();
             d.reverse();
             while d.len() != 0 {
-                match frame.send(d.pop().unwrap()).await {
+                let item = d.pop().unwrap();
+                println!("Sent {}", item);
+                match frame.send(item).await {
                     Ok(_) => {}
                     Err(e) => {
                         println!("There was an error {:?}", e);
