@@ -95,13 +95,17 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                         hmac::Key::new(hmac::HMAC_SHA512, b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
                     let tag = hmac::sign(
                         &key,
-                        frame
-                            .codec_mut()
-                            .hmac_payload
-                            .clone()
-                            .unwrap()
-                            .into_bytes()
-                            .as_slice(),
+                        decode(
+                            frame
+                                .codec_mut()
+                                .hmac_payload
+                                .clone()
+                                .unwrap()
+                                .into_bytes()
+                                .as_slice(),
+                        )
+                        .expect("error with decode 2")
+                        .as_slice(),
                     );
                     println!("client hash: {:?}", &client_hash);
                     // println!("are they equal? {:?}", mac.verify(&client_hash));
