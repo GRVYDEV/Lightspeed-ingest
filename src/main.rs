@@ -4,9 +4,9 @@ use ftl_codec::*;
 use futures::stream::TryStreamExt;
 use futures::{stream, SinkExt, StreamExt};
 use hex::{decode, encode};
-use hmac::{Hmac, Mac, NewMac};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
+use ring::hmac;
 use sha2::Sha512;
 use std::str;
 use tokio::net::TcpListener;
@@ -91,11 +91,10 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                     let client_hash =
                         hex::decode(data.get(&"stream_key".to_string()).unwrap().clone())
                             .expect("error with decode");
-                    type HmacSha512 = Hmac<Sha512>;
-
-                    let mut mac = HmacSha512::new_varkey(b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456")
-                        .expect("some err");
-                    mac.update(
+                    let key =
+                        hmac::Key::new(hmac::HMAC_SHA512, b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
+                    let tag = hmac::sign(
+                        &key,
                         frame
                             .codec_mut()
                             .hmac_payload
@@ -104,12 +103,9 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                             .into_bytes()
                             .as_slice(),
                     );
-                    // let res = mac.finalize().into_bytes();
-                    // let res_slice = res.as_slice();
-                    // let result = str::from_utf8(&res_slice);
                     println!("client hash: {:?}", &client_hash);
-                    println!("are they equal? {:?}", mac.verify(&client_hash));
-                    // println!("server hash {:?}", res_slice);
+                    // println!("are they equal? {:?}", mac.verify(&client_hash));
+                    println!("server hash {:?}", tag);
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                     return;
                 }
