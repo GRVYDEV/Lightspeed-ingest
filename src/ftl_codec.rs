@@ -1,7 +1,7 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::collections::HashMap;
 use std::{fmt, io};
-use tokio::net::TcpStream;
+
 use tokio_util::codec::{Decoder, Encoder, Framed};
 
 #[derive(Debug)]
@@ -19,18 +19,7 @@ pub struct FtlCodec {
     pub hmac_payload: Option<String>,
 }
 
-pub struct Connection {
-    pub hmac_payload: Option<String>,
-    pub conn: Framed<TcpStream, FtlCodec>,
-}
-impl Connection {
-    pub fn new(stream: TcpStream) -> Connection {
-        Connection {
-            hmac_payload: None,
-            conn: Framed::new(stream, FtlCodec::new()),
-        }
-    }
-}
+
 impl FtlCodec {
     pub fn new() -> FtlCodec {
         FtlCodec {

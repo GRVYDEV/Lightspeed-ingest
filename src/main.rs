@@ -1,4 +1,5 @@
 mod ftl_codec;
+mod connection;
 use bytes::{Buf, BufMut, BytesMut};
 use ftl_codec::*;
 use futures::stream::TryStreamExt;
@@ -7,7 +8,7 @@ use hex::{decode, encode};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
 use ring::hmac;
-use sha2::Sha512;
+
 use std::str;
 use tokio::net::TcpListener;
 use tokio::net::TcpStream;
@@ -21,7 +22,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let (socket, _) = listener.accept().await?;
         tokio::spawn(async move {
-            handle_connection(socket).await;
+            connection::Connection::init(socket);
+            // handle_connection(socket).await;
         });
     }
 }
@@ -147,13 +149,4 @@ fn generate_hmac() -> String {
         hmac_payload.push(rng.sample(dist));
     }
     encode(hmac_payload.as_slice())
-}
-
-use std::cmp;
-fn compare(a: &[u8], b: &[u8]) -> cmp::Ordering {
-    a.iter()
-        .zip(b)
-        .map(|(x, y)| x.cmp(y))
-        .find(|&ord| ord != cmp::Ordering::Equal)
-        .unwrap_or(a.len().cmp(&b.len()))
 }
