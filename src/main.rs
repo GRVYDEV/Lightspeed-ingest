@@ -103,7 +103,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                             .into_bytes()
                             .as_slice(),
                     );
-                    println!("client hash: {:?}", &client_hash);
+                    println!("client hash: {:?}", str::from_utf8(&client_hash));
                     // println!("are they equal? {:?}", mac.verify(&client_hash));
                     println!("server hash {:?}", tag);
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
