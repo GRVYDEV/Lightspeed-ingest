@@ -2,7 +2,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::collections::HashMap;
 use std::{fmt, io};
 
-use tokio_util::codec::{Decoder, Encoder, Framed};
+use tokio_util::codec::{Decoder, Encoder};
 
 #[derive(Debug)]
 pub enum FtlCommand {
@@ -16,16 +16,13 @@ pub enum FtlCommand {
 pub struct FtlCodec {
     delimiter_chars_read: usize,
     command_buffer: std::vec::Vec<u8>,
-    pub hmac_payload: Option<String>,
 }
-
 
 impl FtlCodec {
     pub fn new() -> FtlCodec {
         FtlCodec {
             delimiter_chars_read: 0,
             command_buffer: Vec::new(),
-            hmac_payload: None,
         }
     }
 
@@ -33,17 +30,13 @@ impl FtlCodec {
         self.command_buffer = Vec::new();
         self.delimiter_chars_read = 0;
     }
-
-    pub fn set_hmac(&mut self, payload: String) {
-        self.hmac_payload = Some(payload);
-    }
 }
 
 impl Decoder for FtlCodec {
     type Item = FtlCommand;
     type Error = FtlError;
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<FtlCommand>, FtlError> {
-        let mut command: String;
+        let command: String;
         match buf.windows(4).position(|window| window == b"\r\n\r\n") {
             Some(index) => {
                 command = String::from_utf8_lossy(&buf[..index]).to_string();

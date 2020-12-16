@@ -1,5 +1,3 @@
-use bytes::{Buf, BufMut, BytesMut};
-
 use hex::{decode, encode};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
@@ -7,7 +5,7 @@ use ring::hmac;
 
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
-use std::str;
+
 use tokio::net::TcpStream;
 
 use tokio::sync::mpsc;
@@ -34,22 +32,19 @@ impl ConnectionState {
 }
 impl Connection {
     pub fn init(stream: TcpStream) {
-        let (mut frame_send, mut conn_receive) = mpsc::channel::<FtlCommand>(2);
-        let (mut conn_send, mut frame_receive) = mpsc::channel::<FrameCommand>(2);
+        let (frame_send, mut conn_receive) = mpsc::channel::<FtlCommand>(2);
+        let (conn_send, mut frame_receive) = mpsc::channel::<FrameCommand>(2);
 
         tokio::spawn(async move {
             let mut frame = Framed::new(stream, FtlCodec::new());
             loop {
                 match frame.next().await {
                     Some(Ok(command)) => {
-                        println!("Command was {:?}", command);
                         match frame_send.send(command).await {
                             Ok(_) => {
                                 let command = frame_receive.recv().await;
                                 match handle_frame_command(command, &mut frame).await {
-                                    Ok(_) => {
-                                       
-                                    }
+                                    Ok(_) => {}
                                     Err(e) => {
                                         println!(
                                             "There was an error handing frame command {:?}",
@@ -106,7 +101,6 @@ async fn handle_frame_command(
             d.reverse();
             while d.len() != 0 {
                 let item = d.pop().unwrap();
-                println!("Sent {}", item);
                 match frame.send(item).await {
                     Ok(_) => {}
                     Err(e) => {
