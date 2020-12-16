@@ -42,7 +42,7 @@ impl Connection {
             loop {
                 match frame.next().await {
                     Some(Ok(command)) => {
-                        // println!("Command was {:?}", command);
+                        println!("Command was {:?}", command);
                         match frame_send.send(command).await {
                             Ok(_) => {
                                 let command = frame_receive.recv().await;
