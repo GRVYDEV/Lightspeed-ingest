@@ -1,20 +1,16 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::collections::HashMap;
 use std::{fmt, io};
-use tokio_util::codec::{Decoder, Encoder};
-const COMMAND_DELIMITERS: [char; 4] = ['\r', '\n', '\r', '\n'];
+use tokio::net::TcpStream;
+use tokio_util::codec::{Decoder, Encoder, Framed};
+
 #[derive(Debug)]
-pub enum Command {
+pub enum FtlCommand {
     HMAC,
-    Connect,
+    Connect { data: HashMap<String, String> },
     Ping,
     Dot,
     Unsupported,
-}
-#[derive(Debug)]
-pub struct FtlCommand {
-    pub command: Command,
-    pub data: Option<HashMap<String, String>>,
 }
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct FtlCodec {
@@ -23,9 +19,16 @@ pub struct FtlCodec {
     pub hmac_payload: Option<String>,
 }
 
-impl FtlCommand {
-    pub fn new(command: Command, data: Option<HashMap<String, String>>) -> FtlCommand {
-        FtlCommand { command, data }
+pub struct Connection {
+    pub hmac_payload: Option<String>,
+    pub conn: Framed<TcpStream, FtlCodec>,
+}
+impl Connection {
+    pub fn new(stream: TcpStream) -> Connection {
+        Connection {
+            hmac_payload: None,
+            conn: Framed::new(stream, FtlCodec::new()),
+        }
     }
 }
 impl FtlCodec {
@@ -59,7 +62,7 @@ impl Decoder for FtlCodec {
                 println!("Command is: {:?}", command);
                 if command.as_str().contains("HMAC") {
                     self.reset();
-                    return Ok(Some(FtlCommand::new(Command::HMAC, None)));
+                    return Ok(Some(FtlCommand::HMAC));
                 } else if command.as_str().contains("CONNECT") {
                     let commands: Vec<&str> = command.split(" ").collect();
                     let mut key = commands[2].to_string();
@@ -68,7 +71,7 @@ impl Decoder for FtlCodec {
                     data.insert("channel_id".to_string(), commands[1].to_string());
                     data.insert("stream_key".to_string(), key);
                     self.reset();
-                    return Ok(Some(FtlCommand::new(Command::Connect, Some(data))));
+                    return Ok(Some(FtlCommand::Connect { data }));
                 } else {
                     self.reset();
                     return Err(FtlError::Unsupported(command));

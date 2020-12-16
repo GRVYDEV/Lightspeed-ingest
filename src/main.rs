@@ -48,15 +48,10 @@ async fn handle_connection(mut stream: TcpStream) {
 }
 
 async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCodec>) {
-    let mut resp: Vec<String>;
-    match command.command {
-        Command::HMAC => {
-            resp = Vec::new();
+    match command {
+        FtlCommand::HMAC => {
             println!("Handling HMAC Command");
             frame.codec_mut().set_hmac(generate_hmac());
-            resp.push("200 ".to_string());
-            resp.push(frame.codec().hmac_payload.clone().unwrap());
-            resp.push("\n".to_string());
             match frame.send("200 ".to_string()).await {
                 Ok(_) => {}
                 Err(e) => {
@@ -84,14 +79,11 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                 }
             }
         }
-        Command::Connect => {
-            resp = Vec::new();
+        FtlCommand::Connect { data } => {
             println!("Handling Connect Command");
-            match command.data {
-                Some(data) => {
-                    let client_hash =
-                        hex::decode(data.get(&"stream_key".to_string()).unwrap().clone())
-                            .expect("error with hash decode");
+            match (data.get("stream_key"), data.get("channel_id")) {
+                (Some(key), Some(_channel_id)) => {
+                    let client_hash = hex::decode(key).expect("error with hash decode");
                     //TODO: Add a more elegant stream key system
                     let key =
                         hmac::Key::new(hmac::HMAC_SHA512, b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
@@ -112,7 +104,6 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                     ) {
                         Ok(_) => {
                             println!("Hashes equal!");
-                            resp.push("200\n".to_string());
                             match frame.send("200\n".to_string()).await {
                                 Ok(_) => {
                                     return;
@@ -128,15 +119,15 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                             return;
                         }
                     };
-                    // println!("client hash: {:?}", &client_hash);
-                    // // println!("are they equal? {:?}", mac.verify(&client_hash));
-                    // println!("server hash {:?}", tag.as_ref());
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
-                    return;
                 }
 
-                None => {
-                    println!("No data attached to connect command");
+                (None, _) => {
+                    println!("No stream key attached to connect command");
+                    return;
+                }
+                (_, None) => {
+                    println!("No channel id attached to connect command");
                     return;
                 }
             }
