@@ -84,7 +84,7 @@ impl Connection {
             loop {
                 match conn_receive.recv().await {
                     Some(command) => {
-                        handle_command(command, &conn_send, &mut state);
+                        handle_command(command, &conn_send, &mut state).await;
                     }
                     None => {
                         println!("Nothing received from the frame");
