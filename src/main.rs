@@ -48,33 +48,33 @@ async fn handle_connection(mut stream: TcpStream) {
 }
 
 async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCodec>) {
+    let mut resp: Vec<String>;
     match command.command {
         Command::HMAC => {
+            resp = Vec::new();
             println!("Handling HMAC Command");
             frame.codec_mut().set_hmac(generate_hmac());
-            println!(
-                "payload generated {:?}",
-                frame.codec().hmac_payload.clone().unwrap()
-            );
-            let mut resp: Vec<String> = Vec::new();
             resp.push("200 ".to_string());
             resp.push(frame.codec().hmac_payload.clone().unwrap());
             resp.push("\n".to_string());
-            match frame.send(&mut resp.get_mut(0).unwrap()).await {
+            match frame.send("200 ".to_string()).await {
                 Ok(_) => {}
                 Err(e) => {
                     println!("There was an error {:?}", e);
                     return;
                 }
             };
-            match frame.send(&mut resp.get_mut(1).unwrap()).await {
+            match frame
+                .send(frame.codec().hmac_payload.clone().unwrap())
+                .await
+            {
                 Ok(_) => {}
                 Err(e) => {
                     println!("There was an error {:?}", e);
                     return;
                 }
             };
-            match frame.send(&mut resp.get_mut(2).unwrap()).await {
+            match frame.send("\n".to_string()).await {
                 Ok(_) => {
                     return;
                 }
@@ -85,6 +85,7 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
             }
         }
         Command::Connect => {
+            resp = Vec::new();
             println!("Handling Connect Command");
             match command.data {
                 Some(data) => {
@@ -109,8 +110,23 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                         .as_slice(),
                         &client_hash.as_slice(),
                     ) {
-                        Ok(_) => println!("hashes equal!"),
-                        _ => println!("They do not equal"),
+                        Ok(_) => {
+                            println!("Hashes equal!");
+                            resp.push("200\n".to_string());
+                            match frame.send("200\n".to_string()).await {
+                                Ok(_) => {
+                                    return;
+                                }
+                                Err(e) => {
+                                    println!("There was an error {:?}", e);
+                                    return;
+                                }
+                            }
+                        }
+                        _ => {
+                            println!("Hashes do not equal");
+                            return;
+                        }
                     };
                     // println!("client hash: {:?}", &client_hash);
                     // // println!("are they equal? {:?}", mac.verify(&client_hash));

@@ -57,7 +57,6 @@ impl Decoder for FtlCodec {
                 command = String::from_utf8_lossy(&buf[..index]).to_string();
                 buf.advance(index + 4);
                 println!("Command is: {:?}", command);
-
                 if command.as_str().contains("HMAC") {
                     self.reset();
                     return Ok(Some(FtlCommand::new(Command::HMAC, None)));
