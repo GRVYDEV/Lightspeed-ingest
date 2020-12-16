@@ -90,10 +90,11 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                 Some(data) => {
                     let client_hash =
                         hex::decode(data.get(&"stream_key".to_string()).unwrap().clone())
-                            .expect("error with decode");
+                            .expect("error with hash decode");
+                    //TODO: Add a more elegant stream key system
                     let key =
                         hmac::Key::new(hmac::HMAC_SHA512, b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
-                    let tag = hmac::sign(
+                    match hmac::verify(
                         &key,
                         decode(
                             frame
@@ -104,12 +105,16 @@ async fn handle_command(command: FtlCommand, frame: &mut Framed<TcpStream, FtlCo
                                 .into_bytes()
                                 .as_slice(),
                         )
-                        .expect("error with decode 2")
+                        .expect("error with payload decode")
                         .as_slice(),
-                    );
-                    println!("client hash: {:?}", &client_hash);
-                    // println!("are they equal? {:?}", mac.verify(&client_hash));
-                    println!("server hash {:?}", tag.as_ref());
+                        &client_hash.as_slice(),
+                    ) {
+                        Ok(_) => println!("hashes equal!"),
+                        _ => println!("They do not equal"),
+                    };
+                    // println!("client hash: {:?}", &client_hash);
+                    // // println!("are they equal? {:?}", mac.verify(&client_hash));
+                    // println!("server hash {:?}", tag.as_ref());
                     //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                     return;
                 }
@@ -135,4 +140,13 @@ fn generate_hmac() -> String {
         hmac_payload.push(rng.sample(dist));
     }
     encode(hmac_payload.as_slice())
+}
+
+use std::cmp;
+fn compare(a: &[u8], b: &[u8]) -> cmp::Ordering {
+    a.iter()
+        .zip(b)
+        .map(|(x, y)| x.cmp(y))
+        .find(|&ord| ord != cmp::Ordering::Equal)
+        .unwrap_or(a.len().cmp(&b.len()))
 }
