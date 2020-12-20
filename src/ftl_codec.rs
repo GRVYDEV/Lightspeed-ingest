@@ -60,6 +60,9 @@ impl Decoder for FtlCodec {
                 } else if command.as_str().contains(".") && command.len() == 1 {
                     self.reset();
                     return Ok(Some(FtlCommand::Dot));
+                }else if command.as_str().contains("PING"){
+                    self.reset();
+                    return Ok(Some(FtlCommand::Ping));
                 } else {
                     println!("Command is: {:?}", command);
                     self.reset();

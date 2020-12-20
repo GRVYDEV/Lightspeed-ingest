@@ -300,6 +300,19 @@ async fn handle_command(
                 (None, None) => {}
             }
         }
+        FtlCommand::Ping => {
+            resp = Vec::new();
+            resp.push("201\n".to_string());
+            match sender.send(FrameCommand::Send { data: resp }).await {
+                Ok(_) => {
+                    return;
+                }
+                Err(e) => println!(
+                    "Error sending to frame task (From: Handle Connection) {:?}",
+                    e
+                ),
+            }
+        }
         _ => {
             println!("Command not implemented yet. Tell GRVY to quit his day job");
             return;
