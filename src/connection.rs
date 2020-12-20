@@ -18,8 +18,22 @@ enum FrameCommand {
 }
 
 pub struct Connection {}
+#[derive(Debug)]
 pub struct ConnectionState {
     pub hmac_payload: Option<String>,
+    pub protocol_version: Option<String>,
+    pub vendor_name: Option<String>,
+    pub vendor_version: Option<String>,
+    pub video: bool,
+    pub video_codec: Option<String>,
+    pub video_height: Option<String>,
+    pub video_width: Option<String>,
+    pub video_payload_type: Option<String>,
+    pub video_ingest_ssrc: Option<String>,
+    pub audio: bool,
+    pub audio_codec: Option<String>,
+    pub audio_payload_type: Option<String>,
+    pub audio_ingest_ssrc: Option<String>,
 }
 
 impl ConnectionState {
@@ -27,6 +41,24 @@ impl ConnectionState {
         match &self.hmac_payload {
             Some(payload) => return payload.clone(),
             None => return "".to_string(),
+        }
+    }
+    pub fn new() -> ConnectionState {
+        ConnectionState {
+            hmac_payload: None,
+            protocol_version: None,
+            vendor_name: None,
+            vendor_version: None,
+            video: false,
+            video_codec: None,
+            video_height: None,
+            video_width: None,
+            video_payload_type: None,
+            video_ingest_ssrc: None,
+            audio: false,
+            audio_codec: None,
+            audio_ingest_ssrc: None,
+            audio_payload_type: None,
         }
     }
 }
@@ -75,7 +107,7 @@ impl Connection {
         });
 
         tokio::spawn(async move {
-            let mut state = ConnectionState { hmac_payload: None };
+            let mut state = ConnectionState::new();
             loop {
                 match conn_receive.recv().await {
                     Some(command) => {
@@ -199,17 +231,54 @@ async fn handle_command(
             println!("Handling Attribute Command");
             match (data.get("key"), data.get("value")) {
                 (Some(key), Some(value)) => {
-                    println!("Key: {:?}, value: {:?}", key, value);
-                    resp.push("200\n".to_string());
-                            match sender.send(FrameCommand::Send { data: resp }).await {
-                                Ok(_) => {
+                    // println!("Key: {:?}, value: {:?}", key, value);
+                    match key.as_str() {
+                        "ProtocolVersion" => conn.protocol_version = Some(value.to_string()),
+                        "VendorName" => conn.vendor_name = Some(value.to_string()),
+                        "VendorVersion" => conn.vendor_version = Some(value.to_string()),
+                        "Video" => {
+                            match value.as_str() {
+                                "true" => conn.video = true,
+                                "false" => conn.video = false,
+                                _ => {
+                                    println!("Invalid video value! Atrribute parse failed. Value was: {:?}", value);
                                     return;
                                 }
-                                Err(e) => println!(
-                                    "Error sending to frame task (From: Handle Connection) {:?}",
-                                    e
-                                ),
                             }
+                        }
+                        "VideoCodec" => conn.video_codec = Some(value.to_string()),
+                        "VideoHeight" => conn.video_height = Some(value.to_string()),
+                        "VideoWidth" => conn.video_width = Some(value.to_string()),
+                        "VideoPayloadType" => conn.video_payload_type = Some(value.to_string()),
+                        "VideoIngestSSRC" => conn.video_ingest_ssrc = Some(value.to_string()),
+                        "Audio" => {
+                            match value.as_str() {
+                                "true" => conn.audio = true,
+                                "false" => conn.audio = false,
+                                _ => {
+                                    println!("Invalid audio value! Atrribute parse failed. Value was: {:?}", value);
+                                    return;
+                                }
+                            }
+                        }
+                        "AudioCodec" => conn.audio_codec = Some(value.to_string()),
+                        "AudioPayloadType" => conn.audio_payload_type = Some(value.to_string()),
+                        "AudioIngestSSRC" => conn.audio_ingest_ssrc = Some(value.to_string()),
+                        _ => {
+                            println!("Invalid attribute command. Attribute parsing failed. Key was {:?}, Value was {:?}", key, value)
+                        }
+                    }
+                    println!("Conn State: {:?}", conn);
+                    resp.push("200\n".to_string());
+                    match sender.send(FrameCommand::Send { data: resp }).await {
+                        Ok(_) => {
+                            return;
+                        }
+                        Err(e) => println!(
+                            "Error sending to frame task (From: Handle Connection) {:?}",
+                            e
+                        ),
+                    }
                 }
                 (None, Some(value)) => {}
                 (Some(key), None) => {}

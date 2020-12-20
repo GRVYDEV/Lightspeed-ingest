@@ -59,7 +59,7 @@ impl Decoder for FtlCodec {
                 } else if command.as_str().contains(":") {
                     let commands: Vec<&str> = command.split(":").collect();
                     data.insert("key".to_string(), commands[0].to_string());
-                    data.insert("value".to_string(), commands[1].to_string());
+                    data.insert("value".to_string(), commands[1].trim().to_string());
                     self.reset();
                     return Ok(Some(FtlCommand::Attribute { data }));
                 } else {
