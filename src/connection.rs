@@ -321,7 +321,7 @@ async fn handle_command(
             }
         }
         FtlCommand::Ping => {
-            println!("Handling HMAC Command");
+            // println!("Handling PING Command");
             resp = Vec::new();
             resp.push("201\n".to_string());
             match sender.send(FrameCommand::Send { data: resp }).await {

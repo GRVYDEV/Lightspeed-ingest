@@ -39,7 +39,7 @@ impl Decoder for FtlCodec {
         match buf.windows(4).position(|window| window == b"\r\n\r\n") {
             Some(index) => {
                 command = String::from_utf8_lossy(&buf[..index]).to_string();
-                println!("Command is: {:?}", command);
+                // println!("Command is: {:?}", command);
                 buf.advance(index + 4);
                 if command.as_str().contains("HMAC") {
                     self.reset();
