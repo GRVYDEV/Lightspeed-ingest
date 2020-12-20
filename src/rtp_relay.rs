@@ -56,15 +56,15 @@ impl UdpConnection {
                 match relay_receive.recv().await {
                     Some(UdpRelayCommand::Send { data }) => {
                         println!("Received UDP RELAY COMMAND");
-                        match send_socket.send(data.as_slice()).await {
-                            Ok(_) => {}
-                            Err(e) => {
-                                println!(
-                                    "Failed to send packet to loopback interface. Error: {:?}",
-                                    e
-                                )
-                            }
-                        };
+                        // match send_socket.send(data.as_slice()).await {
+                        //     Ok(_) => {}
+                        //     Err(e) => {
+                        //         println!(
+                        //             "Failed to send packet to loopback interface. Error: {:?}",
+                        //             e
+                        //         )
+                        //     }
+                        // };
                     }
                     Some(UdpRelayCommand::Kill) => {}
                     None => {}
