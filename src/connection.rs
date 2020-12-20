@@ -268,7 +268,7 @@ async fn handle_command(
                             println!("Invalid attribute command. Attribute parsing failed. Key was {:?}, Value was {:?}", key, value)
                         }
                     }
-                    println!("Conn State: {:?}", conn);
+                    
                     resp.push("200\n".to_string());
                     match sender.send(FrameCommand::Send { data: resp }).await {
                         Ok(_) => {

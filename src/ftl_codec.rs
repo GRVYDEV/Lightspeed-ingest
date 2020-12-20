@@ -38,13 +38,11 @@ impl Decoder for FtlCodec {
     type Error = FtlError;
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<FtlCommand>, FtlError> {
         let command: String;
-        let attribute_regex = Regex::new(r"~((.+): (.+))~").unwrap();
         let mut data: HashMap<String, String> = HashMap::new();
         match buf.windows(4).position(|window| window == b"\r\n\r\n") {
             Some(index) => {
                 command = String::from_utf8_lossy(&buf[..index]).to_string();
                 buf.advance(index + 4);
-                println!("Command is: {:?}", command);
                 if command.as_str().contains("HMAC") {
                     self.reset();
                     return Ok(Some(FtlCommand::HMAC));
@@ -63,6 +61,7 @@ impl Decoder for FtlCodec {
                     self.reset();
                     return Ok(Some(FtlCommand::Attribute { data }));
                 } else {
+                    println!("Command is: {:?}", command);
                     self.reset();
                     return Err(FtlError::Unsupported(command));
                 }
