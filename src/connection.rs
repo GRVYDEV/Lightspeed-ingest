@@ -90,9 +90,9 @@ impl Connection {
                                     }
                                 };
                             }
-                            _ => {
+                            Err(e) => {
                                 println!(
-                                    "There was an error sending the command to the connection"
+                                    "There was an error sending the command to the connection Error: {:?}", e
                                 );
                                 return;
                             }
@@ -126,9 +126,7 @@ impl Connection {
                                     })
                                     .await
                                 {
-                                    Ok(_) => {
-                                        return;
-                                    }
+                                    Ok(_) => {}
                                     Err(e) => println!("Error starting udp task"),
                                 }
                             }
