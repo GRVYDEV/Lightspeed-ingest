@@ -15,21 +15,18 @@ pub enum FtlCommand {
 }
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct FtlCodec {
-    delimiter_chars_read: usize,
     command_buffer: std::vec::Vec<u8>,
 }
 
 impl FtlCodec {
     pub fn new() -> FtlCodec {
         FtlCodec {
-            delimiter_chars_read: 0,
             command_buffer: Vec::new(),
         }
     }
 
     pub fn reset(&mut self) {
         self.command_buffer = Vec::new();
-        self.delimiter_chars_read = 0;
     }
 }
 
@@ -60,6 +57,9 @@ impl Decoder for FtlCodec {
                     data.insert("value".to_string(), commands[1].trim().to_string());
                     self.reset();
                     return Ok(Some(FtlCommand::Attribute { data }));
+                } else if command.as_str().contains(".") && command.len() == 1 {
+                    self.reset();
+                    return Ok(Some(FtlCommand::Dot));
                 } else {
                     println!("Command is: {:?}", command);
                     self.reset();

@@ -1,13 +1,11 @@
+use crate::ftl_codec::{FtlCodec, FtlCommand};
+use crate::rtp_relay::*;
+use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
 use ring::hmac;
-
-use crate::ftl_codec::{FtlCodec, FtlCommand};
-use futures::{SinkExt, StreamExt};
-
 use tokio::net::TcpStream;
-
 use tokio::sync::mpsc;
 use tokio_util::codec::Framed;
 
@@ -110,6 +108,24 @@ impl Connection {
             let mut state = ConnectionState::new();
             loop {
                 match conn_receive.recv().await {
+                    Some(FtlCommand::Dot) => {
+                        let resp_string = format!("200 hi. Use UDP port 9000\n");
+                        let mut resp = Vec::new();
+                        resp.push(resp_string);
+                        match conn_send.send(FrameCommand::Send { data: resp }).await {
+                            Ok(_) => {
+                                tokio::spawn(async move {
+                                    UdpConnection::init("9000".to_string());
+                                });
+                                return;
+                            }
+                            Err(e) => {
+                                println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
+                                return;
+                            }
+                        }
+
+                    }
                     Some(command) => {
                         handle_command(command, &conn_send, &mut state).await;
                     }
@@ -268,7 +284,6 @@ async fn handle_command(
                             println!("Invalid attribute command. Attribute parsing failed. Key was {:?}, Value was {:?}", key, value)
                         }
                     }
-                    
                     resp.push("200\n".to_string());
                     match sender.send(FrameCommand::Send { data: resp }).await {
                         Ok(_) => {
