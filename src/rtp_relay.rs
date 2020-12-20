@@ -29,10 +29,10 @@ impl UdpConnection {
                 .connect(format!("0.0.0.0:{}", recv_socket_port))
                 .await
             {
-                Ok(_) => {}
+                Ok(_) => {println!("udp connected");}
                 Err(e) => println!("There was an error connecting to udp socket {:?}", e),
             };
-            println!("udp connected");
+            
             loop {
                 match recv_socket.readable().await {
                     Ok(_) => {println!("Socket is readable")}
