@@ -15,6 +15,11 @@ enum FrameCommand {
     Kill,
 }
 
+#[derive(Debug)]
+enum UdpCommand {
+    Start { data: String },
+    Kill,
+}
 pub struct Connection {}
 #[derive(Debug)]
 pub struct ConnectionState {
@@ -64,6 +69,7 @@ impl Connection {
     pub fn init(stream: TcpStream) {
         let (frame_send, mut conn_receive) = mpsc::channel::<FtlCommand>(2);
         let (conn_send, mut frame_receive) = mpsc::channel::<FrameCommand>(2);
+        let (upd_send, mut udp_receive) = mpsc::channel::<UdpCommand>(2);
 
         tokio::spawn(async move {
             let mut frame = Framed::new(stream, FtlCodec::new());
@@ -114,17 +120,23 @@ impl Connection {
                         resp.push(resp_string);
                         match conn_send.send(FrameCommand::Send { data: resp }).await {
                             Ok(_) => {
-                                tokio::spawn(async move {
-                                    UdpConnection::init("9275".to_string());
-                                });
-                                return;
+                                match upd_send
+                                    .send(UdpCommand::Start {
+                                        data: "9275".to_string(),
+                                    })
+                                    .await
+                                {
+                                    Ok(_) => {
+                                        return;
+                                    }
+                                    Err(e) => println!("Error starting udp task"),
+                                }
                             }
                             Err(e) => {
                                 println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
                                 return;
                             }
                         }
-
                     }
                     Some(command) => {
                         handle_command(command, &conn_send, &mut state).await;
@@ -134,6 +146,16 @@ impl Connection {
                         return;
                     }
                 }
+            }
+        });
+
+        tokio::spawn(async move {
+            match udp_receive.recv().await {
+                Some(UdpCommand::Start { data }) => {
+                    UdpConnection::init(data);
+                }
+                Some(UdpCommand::Kill) => {}
+                None => {}
             }
         });
     }
