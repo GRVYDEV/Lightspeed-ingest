@@ -32,9 +32,10 @@ impl UdpConnection {
                 Ok(_) => {}
                 Err(e) => println!("There was an error connecting to udp socket {:?}", e),
             };
+            println!("udp connected");
             loop {
                 match recv_socket.readable().await {
-                    Ok(_) => {}
+                    Ok(_) => {println!("Socket is readable")}
                     Err(e) => println!("Error waiting for socket to be readable {:?}", e),
                 };
                 let mut buf = [0 as u8];
