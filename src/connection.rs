@@ -109,13 +109,13 @@ impl Connection {
             loop {
                 match conn_receive.recv().await {
                     Some(FtlCommand::Dot) => {
-                        let resp_string = format!("200 hi. Use UDP port 9000\n");
+                        let resp_string = format!("200 hi. Use UDP port 9275\n");
                         let mut resp = Vec::new();
                         resp.push(resp_string);
                         match conn_send.send(FrameCommand::Send { data: resp }).await {
                             Ok(_) => {
                                 tokio::spawn(async move {
-                                    UdpConnection::init("9000".to_string());
+                                    UdpConnection::init("9275".to_string());
                                 });
                                 return;
                             }
