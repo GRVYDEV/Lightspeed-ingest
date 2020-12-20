@@ -56,7 +56,7 @@ impl Decoder for FtlCodec {
                     data.insert("stream_key".to_string(), key);
                     self.reset();
                     return Ok(Some(FtlCommand::Connect { data }));
-                } else if attribute_regex.is_match(command.as_str()) {
+                } else if command.as_str().contains(":") {
                     let commands: Vec<&str> = command.split(":").collect();
                     data.insert("key".to_string(), commands[0].to_string());
                     data.insert("value".to_string(), commands[1].to_string());
