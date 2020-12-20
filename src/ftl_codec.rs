@@ -1,7 +1,7 @@
 use bytes::{Buf, BufMut, BytesMut};
+use regex::Regex;
 use std::collections::HashMap;
 use std::{fmt, io};
-
 use tokio_util::codec::{Decoder, Encoder};
 
 #[derive(Debug)]
@@ -10,6 +10,7 @@ pub enum FtlCommand {
     Connect { data: HashMap<String, String> },
     Ping,
     Dot,
+    Attribute { data: HashMap<String, String> },
     Unsupported,
 }
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -37,6 +38,8 @@ impl Decoder for FtlCodec {
     type Error = FtlError;
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<FtlCommand>, FtlError> {
         let command: String;
+        let attribute_regex = Regex::new(r"~((.+): (.+))~").unwrap();
+        let mut data: HashMap<String, String> = HashMap::new();
         match buf.windows(4).position(|window| window == b"\r\n\r\n") {
             Some(index) => {
                 command = String::from_utf8_lossy(&buf[..index]).to_string();
@@ -49,11 +52,16 @@ impl Decoder for FtlCodec {
                     let commands: Vec<&str> = command.split(" ").collect();
                     let mut key = commands[2].to_string();
                     key.remove(0);
-                    let mut data: HashMap<String, String> = HashMap::new();
                     data.insert("channel_id".to_string(), commands[1].to_string());
                     data.insert("stream_key".to_string(), key);
                     self.reset();
                     return Ok(Some(FtlCommand::Connect { data }));
+                } else if attribute_regex.is_match(command.as_str()) {
+                    let commands: Vec<&str> = command.split(":").collect();
+                    data.insert("key".to_string(), commands[0].to_string());
+                    data.insert("value".to_string(), commands[1].to_string());
+                    self.reset();
+                    return Ok(Some(FtlCommand::Attribute { data }));
                 } else {
                     self.reset();
                     return Err(FtlError::Unsupported(command));

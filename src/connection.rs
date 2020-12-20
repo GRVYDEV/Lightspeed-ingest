@@ -194,6 +194,17 @@ async fn handle_command(
                 }
             }
         }
+        FtlCommand::Attribute { data } => {
+            println!("Handling Attribute Command");
+            match (data.get("key"), data.get("value")) {
+                (Some(key), Some(value)) => {
+                    println!("Key: {:?}, value: {:?}", key, value);
+                }
+                (None, Some(value)) => {}
+                (Some(key), None) => {}
+                (None, None) => {}
+            }
+        }
         _ => {
             println!("Command not implemented yet. Tell GRVY to quit his day job");
             return;
