@@ -54,6 +54,7 @@ impl UdpConnection {
                         }
                     }
                     Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                        println!("would block");
                         continue;
                     }
                     Err(e) => {
