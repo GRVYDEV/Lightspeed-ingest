@@ -70,7 +70,7 @@ impl Connection {
         let (frame_send, mut conn_receive) = mpsc::channel::<FtlCommand>(2);
         let (conn_send, mut frame_receive) = mpsc::channel::<FrameCommand>(2);
         let (upd_send, mut udp_receive) = mpsc::channel::<UdpCommand>(2);
-
+        let addr = stream.peer_addr().unwrap();
         tokio::spawn(async move {
             let mut frame = Framed::new(stream, FtlCodec::new());
             loop {
@@ -150,7 +150,7 @@ impl Connection {
         tokio::spawn(async move {
             match udp_receive.recv().await {
                 Some(UdpCommand::Start { data }) => {
-                    UdpConnection::init(data);
+                    UdpConnection::init(data, addr);
                 }
                 Some(UdpCommand::Kill) => {}
                 None => {}

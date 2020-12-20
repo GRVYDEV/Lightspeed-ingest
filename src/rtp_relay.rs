@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
@@ -18,7 +19,7 @@ pub enum UdpRelayCommand {
 }
 
 impl UdpConnection {
-    pub fn init(recv_socket_port: String) {
+    pub fn init(recv_socket_port: String, addr: SocketAddr) {
         let (relay_send, mut relay_receive) = mpsc::channel::<UdpRelayCommand>(2);
         tokio::spawn(async move {
             let recv_socket = UdpSocket::bind("10.0.0.5:9275")
@@ -26,7 +27,7 @@ impl UdpConnection {
                 .expect("Failed to bind to port");
 
             match recv_socket
-                .connect("10.0.0.5:9275")
+                .connect(addr)
                 .await
             {
                 Ok(_) => {println!("udp connected");}
