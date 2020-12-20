@@ -115,14 +115,14 @@ impl Connection {
             loop {
                 match conn_receive.recv().await {
                     Some(FtlCommand::Dot) => {
-                        let resp_string = format!("200 hi. Use UDP port 9275\n");
+                        let resp_string = format!("200 hi. Use UDP port 9112\n");
                         let mut resp = Vec::new();
                         resp.push(resp_string);
                         match conn_send.send(FrameCommand::Send { data: resp }).await {
                             Ok(_) => {
                                 match upd_send
                                     .send(UdpCommand::Start {
-                                        data: "9275".to_string(),
+                                        data: "9112".to_string(),
                                     })
                                     .await
                                 {

@@ -22,7 +22,7 @@ impl UdpConnection {
     pub fn init(recv_socket_port: String, addr: SocketAddr) {
         let (relay_send, mut relay_receive) = mpsc::channel::<UdpRelayCommand>(2);
         tokio::spawn(async move {
-            let recv_socket = UdpSocket::bind("10.0.0.5:9275")
+            let recv_socket = UdpSocket::bind("10.0.0.5:9112")
                 .await
                 .expect("Failed to bind to port");
 
