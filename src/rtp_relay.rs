@@ -23,6 +23,7 @@ impl UdpConnection {
             let recv_socket = UdpSocket::bind(format!("0.0.0.0:{}", recv_socket_port))
                 .await
                 .expect("Failed to bind to port");
+                println!("Connected to udp socket");
             loop {
                 let mut buf = [0 as u8];
                 match recv_socket.recv(&mut buf).await {
