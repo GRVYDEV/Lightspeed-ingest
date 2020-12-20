@@ -195,10 +195,21 @@ async fn handle_command(
             }
         }
         FtlCommand::Attribute { data } => {
+            resp = Vec::new();
             println!("Handling Attribute Command");
             match (data.get("key"), data.get("value")) {
                 (Some(key), Some(value)) => {
                     println!("Key: {:?}, value: {:?}", key, value);
+                    resp.push("200\n".to_string());
+                            match sender.send(FrameCommand::Send { data: resp }).await {
+                                Ok(_) => {
+                                    return;
+                                }
+                                Err(e) => println!(
+                                    "Error sending to frame task (From: Handle Connection) {:?}",
+                                    e
+                                ),
+                            }
                 }
                 (None, Some(value)) => {}
                 (Some(key), None) => {}
