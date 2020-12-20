@@ -23,12 +23,13 @@ impl UdpConnection {
             let recv_socket = UdpSocket::bind(format!("0.0.0.0:{}", recv_socket_port))
                 .await
                 .expect("Failed to bind to port");
-                println!("Connected to udp socket");
+                
             loop {
                 let mut buf = [0 as u8];
+                println!("Connected to udp socket");
                 match recv_socket.recv(&mut buf).await {
                     Ok(_) => {
-                        println!("Receieved: {:?}", buf);
+                        println!("Receieved");
                         match relay_send
                             .send(UdpRelayCommand::Send { data: buf.to_vec() })
                             .await
