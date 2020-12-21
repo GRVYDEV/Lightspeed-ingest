@@ -34,7 +34,7 @@ pub async fn real_receive_start(
         .expect("Failed to bind to port");
     let mut bytes;
     loop {
-        bytes = vec![0 as u8; 2500];
+        bytes = vec![0 as u8; 4096];
         // let mut buf = [0 as u8; 2000];
         match recv_socket.recv(&mut bytes).await {
             Ok(n) => {
@@ -75,11 +75,11 @@ pub async fn relay_start(relay_receive: broadcast::Sender<UdpRelayCommand>) {
 }
 
 pub async fn real_relay_start(relay_receive: broadcast::Sender<UdpRelayCommand>) {
-    let send_socket = UdpSocket::bind("127.0.0.1:9000")
+    let send_socket = UdpSocket::bind("127.0.0.1:5004")
         .await
         .expect("failed to bind to 127.0.0.1:9000");
     let mut recv: broadcast::Receiver<UdpRelayCommand> = relay_receive.subscribe();
-    match send_socket.connect("127.0.0.1:9000").await {
+    match send_socket.connect("127.0.0.1:5004").await {
         Ok(_) => {}
         Err(e) => println!("There was an error connecting to udp socket {:?}", e),
     }
