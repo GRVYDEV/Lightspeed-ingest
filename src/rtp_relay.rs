@@ -32,9 +32,9 @@ pub async fn real_receive_start(
     let recv_socket = UdpSocket::bind("10.17.0.5:65535")
         .await
         .expect("Failed to bind to port");
-    let mut bytes;
+    let mut bytes = vec![0 as u8; 4096];
     loop {
-        bytes = vec![0 as u8; 4096];
+        
         // let mut buf = [0 as u8; 2000];
         match recv_socket.recv(&mut bytes).await {
             Ok(n) => {
