@@ -1,11 +1,12 @@
-use std::net::SocketAddr;
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
 use ring::hmac;
+use rtp_rs::*;
 use std::io;
+use std::net::SocketAddr;
 use tokio::net::UdpSocket;
 use tokio::sync::mpsc;
 use tokio_util::codec::BytesCodec;
@@ -33,17 +34,18 @@ impl UdpConnection {
             //     Ok(_) => {println!("udp connected");}
             //     Err(e) => println!("There was an error connecting to udp socket {:?}", e),
             // };
-            
             loop {
                 // match recv_socket.readable().await {
                 //     Ok(_) => {println!("Socket is readable")}
                 //     Err(e) => println!("Error waiting for socket to be readable {:?}", e),
                 // };
-                let mut buf = [0 as u8; 1500];
+                let mut buf = vec![0 as u8; 2000];
 
                 match recv_socket.recv(&mut buf).await {
                     Ok(n) => {
-                        println!("Receieved {:?}", buf);
+                        if let Ok(rtp) = RtpReader::new(&buf) {
+                            println!("Receieved {:?}", rtp);
+                        };
                         match relay_send
                             .send(UdpRelayCommand::Send { data: buf.to_vec() })
                             .await

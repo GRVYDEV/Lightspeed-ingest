@@ -38,6 +38,7 @@ dependencies = [
  "rand",
  "regex",
  "ring",
+ "rtp-rs",
  "tokio",
  "tokio-util",
 ]
@@ -474,6 +475,12 @@ dependencies = [
  "web-sys",
  "winapi",
 ]
+
+[[package]]
+name = "rtp-rs"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1110d695193d446e901de09921ffbf2d86ae351bbfde9c5b53863ce177e17f5"
 
 [[package]]
 name = "scopeguard"
