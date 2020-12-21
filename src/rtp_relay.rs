@@ -25,7 +25,7 @@ impl UdpConnection {
             let recv_socket = UdpSocket::bind("10.17.0.5:65535")
                 .await
                 .expect("Failed to bind to port");
-
+            println!("Addr is: {:?}", addr);
             match recv_socket
                 .connect(addr)
                 .await
