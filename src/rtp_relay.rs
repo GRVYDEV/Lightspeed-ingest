@@ -35,13 +35,13 @@ impl UdpConnection {
             };
             
             loop {
-                match recv_socket.readable().await {
-                    Ok(_) => {println!("Socket is readable")}
-                    Err(e) => println!("Error waiting for socket to be readable {:?}", e),
-                };
+                // match recv_socket.readable().await {
+                //     Ok(_) => {println!("Socket is readable")}
+                //     Err(e) => println!("Error waiting for socket to be readable {:?}", e),
+                // };
                 let mut buf = [0 as u8];
 
-                match recv_socket.try_recv(&mut buf) {
+                match recv_socket.recv(&mut buf).await {
                     Ok(n) => {
                         println!("Receieved {:?} bytes", n);
                         match relay_send
