@@ -26,13 +26,13 @@ impl UdpConnection {
                 .await
                 .expect("Failed to bind to port");
             println!("Addr is: {:?}", addr);
-            match recv_socket
-                .connect(addr)
-                .await
-            {
-                Ok(_) => {println!("udp connected");}
-                Err(e) => println!("There was an error connecting to udp socket {:?}", e),
-            };
+            // match recv_socket
+            //     .connect(addr)
+            //     .await
+            // {
+            //     Ok(_) => {println!("udp connected");}
+            //     Err(e) => println!("There was an error connecting to udp socket {:?}", e),
+            // };
             
             loop {
                 // match recv_socket.readable().await {
