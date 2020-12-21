@@ -75,7 +75,7 @@ pub async fn relay_start(relay_receive: broadcast::Sender<UdpRelayCommand>) {
 }
 
 pub async fn real_relay_start(relay_receive: broadcast::Sender<UdpRelayCommand>) {
-    let send_socket = UdpSocket::bind("127.0.0.1:5004")
+    let send_socket = UdpSocket::bind("127.0.0.1:9000")
         .await
         .expect("failed to bind to 127.0.0.1:9000");
     let mut recv: broadcast::Receiver<UdpRelayCommand> = relay_receive.subscribe();
