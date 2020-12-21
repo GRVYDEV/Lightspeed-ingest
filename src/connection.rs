@@ -1,14 +1,14 @@
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use crate::rtp_relay::*;
+use futures::future::abortable;
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
 use ring::hmac;
 use tokio::net::TcpStream;
-use tokio::sync::mpsc;
+use tokio::sync::{broadcast, mpsc};
 use tokio_util::codec::Framed;
-
 #[derive(Debug)]
 enum FrameCommand {
     Send { data: Vec<String> },
@@ -114,6 +114,16 @@ impl Connection {
             let mut state = ConnectionState::new();
             loop {
                 match conn_receive.recv().await {
+                    Some(FtlCommand::Disconnect) => match upd_send.send(UdpCommand::Kill).await {
+                        Ok(_) => {
+                            println!("Udp task kill command sent");
+                            return;
+                        }
+                        Err(e) => {
+                            println!("Error killing udp command {:?}", e);
+                            break;
+                        }
+                    },
                     Some(FtlCommand::Dot) => {
                         match upd_send
                             .send(UdpCommand::Start {
@@ -149,14 +159,31 @@ impl Connection {
                 }
             }
         });
-
         tokio::spawn(async move {
+            let (relay_send, mut relay_receive) = broadcast::channel::<UdpRelayCommand>(2);
+            let (recv_task, recv_handle) =
+                abortable(receive_start("bla".to_string(), relay_send.clone()));
+            let (relay_task, relay_handle) = abortable(relay_start(relay_send.clone()));
             match udp_receive.recv().await {
                 Some(UdpCommand::Start { data }) => {
-                    UdpConnection::init(data, addr);
+                    tokio::spawn(recv_task);
+                    tokio::spawn(relay_task);
                 }
                 Some(UdpCommand::Kill) => {}
                 None => {}
+            }
+            loop {
+                match udp_receive.recv().await {
+                    Some(UdpCommand::Start { data }) => {
+                        println!("Task already started")
+                    }
+                    Some(UdpCommand::Kill) => {
+                        println!("Tasks aborted");
+                        relay_handle.abort();
+                        recv_handle.abort();
+                    }
+                    None => {}
+                }
             }
         });
     }
