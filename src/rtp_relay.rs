@@ -36,6 +36,7 @@ pub async fn real_receive_start(
     loop {
         match recv_socket.recv(&mut bytes).await {
             Ok(n) => {
+                println!("Receieved {:?} bytes", n);
                 if let Ok(rtp) = RtpReader::new(&bytes) {
                     println!("Receieved {:?}", rtp);
                 };
