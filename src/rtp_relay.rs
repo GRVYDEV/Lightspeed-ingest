@@ -33,15 +33,17 @@ pub async fn real_receive_start(
         .await
         .expect("Failed to bind to port");
     let mut bytes = BytesMut::with_capacity(2000);
+    
     loop {
-        match recv_socket.recv(&mut bytes).await {
+        let mut buf = [0 as u8; 2000];
+        match recv_socket.recv(&mut buf).await {
             Ok(n) => {
                 println!("Receieved {:?} bytes", n);
-                if let Ok(rtp) = RtpReader::new(&bytes) {
+                if let Ok(rtp) = RtpReader::new(&buf) {
                     println!("Receieved {:?}", rtp);
                 };
                 match relay_send.send(UdpRelayCommand::Send {
-                    data: bytes.to_vec(),
+                    data: buf.to_vec(),
                 }) {
                     Ok(_) => {
                         bytes.clear();
