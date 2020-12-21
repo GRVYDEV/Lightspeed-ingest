@@ -32,19 +32,19 @@ pub async fn real_receive_start(
     let recv_socket = UdpSocket::bind("10.17.0.5:65535")
         .await
         .expect("Failed to bind to port");
-    let mut bytes = BytesMut::with_capacity(2000);
-    bytes.put("blah".to_string().as_bytes());
+    let mut bytes;
     loop {
+        bytes = vec![0 as u8; 2500];
         // let mut buf = [0 as u8; 2000];
         match recv_socket.recv(&mut bytes).await {
             Ok(n) => {
-                println!("Receieved {:?} bytes", &bytes.len());
-                if let Ok(rtp) = RtpReader::new(&bytes.to_vec()) {
+                println!("Receieved {:?} bytes", n);
+                if let Ok(rtp) = RtpReader::new(&bytes[..n]) {
                     println!("Receieved {:?}", rtp);
                 };
                 println!("Receieved {:?}", &bytes.to_vec());
                 match relay_send.send(UdpRelayCommand::Send {
-                    data: bytes.to_vec(),
+                    data: bytes[..n].to_vec(),
                 }) {
                     Ok(_) => {
                         bytes.clear();
@@ -87,7 +87,6 @@ pub async fn real_relay_start(relay_receive: broadcast::Sender<UdpRelayCommand>)
     loop {
         match recv.recv().await {
             Ok(UdpRelayCommand::Send { data }) => {
-                println!("Received UDP RELAY COMMAND");
                 match send_socket.send(data.as_slice()).await {
                     Ok(_) => {}
                     Err(e) => {
