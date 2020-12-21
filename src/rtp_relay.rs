@@ -43,7 +43,7 @@ impl UdpConnection {
 
                 match recv_socket.recv(&mut buf).await {
                     Ok(n) => {
-                        println!("Receieved {:?} bytes", n);
+                        println!("Receieved {:?}", buf);
                         match relay_send
                             .send(UdpRelayCommand::Send { data: buf.to_vec() })
                             .await
