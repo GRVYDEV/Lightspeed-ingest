@@ -85,9 +85,9 @@ where
 
     fn encode(&mut self, line: T, buf: &mut BytesMut) -> Result<(), FtlError> {
         let line = line.as_ref();
-        println!("line: {:?}", &line);
         buf.reserve(line.len());
         buf.put(line.as_bytes());
+        println!("Bytes: {:?}", buf.to_vec());
         Ok(())
     }
 }
