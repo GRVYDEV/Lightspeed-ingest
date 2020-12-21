@@ -115,25 +115,28 @@ impl Connection {
             loop {
                 match conn_receive.recv().await {
                     Some(FtlCommand::Dot) => {
-                        let resp_string = format!("200 hi. Use UDP port 9112\n");
-                        let mut resp = Vec::new();
-                        resp.push(resp_string);
-                        match conn_send.send(FrameCommand::Send { data: resp }).await {
+                        match upd_send
+                            .send(UdpCommand::Start {
+                                data: "9112".to_string(),
+                            })
+                            .await
+                        {
                             Ok(_) => {
-                                match upd_send
-                                    .send(UdpCommand::Start {
-                                        data: "9112".to_string(),
-                                    })
-                                    .await
-                                {
+                                let resp_string = format!("200 hi. Use UDP port 9112\n");
+                                let mut resp = Vec::new();
+                                resp.push(resp_string);
+                                match conn_send.send(FrameCommand::Send { data: resp }).await {
                                     Ok(_) => {}
-                                    Err(e) => println!("Error starting udp task"),
+                                    Err(e) => {
+                                        println!(
+                                            "Error sending to frame task (From: Handle HMAC) {:?}",
+                                            e
+                                        );
+                                        return;
+                                    }
                                 }
                             }
-                            Err(e) => {
-                                println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
-                                return;
-                            }
+                            Err(e) => println!("Error starting udp task"),
                         }
                     }
                     Some(command) => {
