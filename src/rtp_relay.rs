@@ -33,7 +33,7 @@ pub async fn real_receive_start(
         .await
         .expect("Failed to bind to port");
     let mut bytes = BytesMut::with_capacity(2000);
-    
+    bytes.put("blah".to_string().as_bytes());
     loop {
         // let mut buf = [0 as u8; 2000];
         match recv_socket.recv(&mut bytes).await {
