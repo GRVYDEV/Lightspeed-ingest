@@ -35,15 +35,15 @@ pub async fn real_receive_start(
     let mut bytes = BytesMut::with_capacity(2000);
     
     loop {
-        let mut buf = [0 as u8; 2000];
-        match recv_socket.recv(&mut buf).await {
+        // let mut buf = [0 as u8; 2000];
+        match recv_socket.recv(&mut bytes).await {
             Ok(n) => {
                 println!("Receieved {:?} bytes", n);
-                if let Ok(rtp) = RtpReader::new(&buf) {
+                if let Ok(rtp) = RtpReader::new(&bytes.to_vec()) {
                     println!("Receieved {:?}", rtp);
                 };
                 match relay_send.send(UdpRelayCommand::Send {
-                    data: buf.to_vec(),
+                    data: bytes.to_vec(),
                 }) {
                     Ok(_) => {
                         bytes.clear();
