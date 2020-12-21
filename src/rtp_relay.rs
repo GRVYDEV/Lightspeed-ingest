@@ -42,6 +42,7 @@ pub async fn real_receive_start(
                 if let Ok(rtp) = RtpReader::new(&bytes.to_vec()) {
                     println!("Receieved {:?}", rtp);
                 };
+                println!("Receieved {:?}", &bytes.to_vec());
                 match relay_send.send(UdpRelayCommand::Send {
                     data: bytes.to_vec(),
                 }) {
