@@ -1,4 +1,4 @@
-use bytes::BytesMut;
+use bytes::{BufMut, BytesMut};
 use rtp_rs::*;
 use std::io;
 use std::net::SocketAddr;
