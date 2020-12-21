@@ -132,7 +132,7 @@ impl Connection {
                             .await
                         {
                             Ok(_) => {
-                                let resp_string = format!("200 hi. Use UDP port 9112\n");
+                                let resp_string = "200 hi. Use UDP port 9112\n".to_string();
                                 let mut resp = Vec::new();
                                 resp.push(resp_string);
                                 match conn_send.send(FrameCommand::Send { data: resp }).await {
