@@ -1,5 +1,5 @@
 use bytes::{Buf, BufMut, BytesMut};
-use regex::Regex;
+
 use std::collections::HashMap;
 use std::{fmt, io};
 use tokio_util::codec::{Decoder, Encoder};
@@ -11,7 +11,6 @@ pub enum FtlCommand {
     Ping,
     Dot,
     Attribute { data: HashMap<String, String> },
-    Unsupported,
     Disconnect,
 }
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]

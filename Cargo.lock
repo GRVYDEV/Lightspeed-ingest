@@ -22,22 +22,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
-name = "brime-ftl-plugin"
-version = "0.1.0"
-dependencies = [
- "bytes 0.5.6",
- "futures",
- "futures-util",
- "hex",
- "rand",
- "regex",
- "ring",
- "rtp-rs",
- "tokio",
- "tokio-util",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -227,6 +211,22 @@ name = "libc"
 version = "0.2.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2448f6066e80e3bfc792e9c98bf705b4b0fc6e8ef5b43e5889aff0eaa9c58743"
+
+[[package]]
+name = "lightspeed-ingest"
+version = "0.1.0"
+dependencies = [
+ "bytes 0.5.6",
+ "futures",
+ "futures-util",
+ "hex",
+ "rand",
+ "regex",
+ "ring",
+ "rtp-rs",
+ "tokio",
+ "tokio-util",
+]
 
 [[package]]
 name = "lock_api"
