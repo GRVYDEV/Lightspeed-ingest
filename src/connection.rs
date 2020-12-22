@@ -125,29 +125,39 @@ impl Connection {
                         }
                     },
                     Some(FtlCommand::Dot) => {
-                        match upd_send
-                            .send(UdpCommand::Start {
-                                data: "9112".to_string(),
-                            })
-                            .await
-                        {
-                            Ok(_) => {
-                                let resp_string = "200 hi. Use UDP port 10170\n".to_string();
-                                let mut resp = Vec::new();
-                                resp.push(resp_string);
-                                match conn_send.send(FrameCommand::Send { data: resp }).await {
-                                    Ok(_) => {}
-                                    Err(e) => {
-                                        println!(
-                                            "Error sending to frame task (From: Handle HMAC) {:?}",
-                                            e
-                                        );
-                                        return;
-                                    }
-                                }
+                        let resp_string = "200 hi. Use UDP port 10170\n".to_string();
+                        let mut resp = Vec::new();
+                        resp.push(resp_string);
+                        match conn_send.send(FrameCommand::Send { data: resp }).await {
+                            Ok(_) => {}
+                            Err(e) => {
+                                println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
+                                return;
                             }
-                            Err(e) => println!("Error starting udp task"),
                         }
+                        // match upd_send
+                        //     .send(UdpCommand::Start {
+                        //         data: "9112".to_string(),
+                        //     })
+                        //     .await
+                        // {
+                        //     Ok(_) => {
+                        //         let resp_string = "200 hi. Use UDP port 10170\n".to_string();
+                        //         let mut resp = Vec::new();
+                        //         resp.push(resp_string);
+                        //         match conn_send.send(FrameCommand::Send { data: resp }).await {
+                        //             Ok(_) => {}
+                        //             Err(e) => {
+                        //                 println!(
+                        //                     "Error sending to frame task (From: Handle HMAC) {:?}",
+                        //                     e
+                        //                 );
+                        //                 return;
+                        //             }
+                        //         }
+                        //     }
+                        //     Err(e) => println!("Error starting udp task"),
+                        // }
                     }
                     Some(command) => {
                         handle_command(command, &conn_send, &mut state).await;
