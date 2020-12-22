@@ -12,6 +12,7 @@ pub enum FtlCommand {
     Dot,
     Attribute { data: HashMap<String, String> },
     Unsupported,
+    Disconnect,
 }
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct FtlCodec {
@@ -44,6 +45,9 @@ impl Decoder for FtlCodec {
                 if command.as_str().contains("HMAC") {
                     self.reset();
                     return Ok(Some(FtlCommand::HMAC));
+                } else if command.as_str().contains("DISCONNECT") {
+                    self.reset();
+                    return Ok(Some(FtlCommand::Disconnect));
                 } else if command.as_str().contains("CONNECT") {
                     let commands: Vec<&str> = command.split(" ").collect();
                     let mut key = commands[2].to_string();
@@ -61,11 +65,10 @@ impl Decoder for FtlCodec {
                 } else if command.as_str().contains(".") && command.len() == 1 {
                     self.reset();
                     return Ok(Some(FtlCommand::Dot));
-                }else if command.as_str().contains("PING"){
+                } else if command.as_str().contains("PING") {
                     self.reset();
                     return Ok(Some(FtlCommand::Ping));
                 } else {
-                    
                     self.reset();
                     return Err(FtlError::Unsupported(command));
                 }
@@ -84,6 +87,7 @@ where
         let line = line.as_ref();
         buf.reserve(line.len());
         buf.put(line.as_bytes());
+        
         Ok(())
     }
 }
