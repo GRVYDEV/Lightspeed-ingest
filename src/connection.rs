@@ -1,24 +1,16 @@
 use crate::ftl_codec::{FtlCodec, FtlCommand};
-use crate::rtp_relay::*;
-use futures::future::abortable;
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
 use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
 use ring::hmac;
 use tokio::net::TcpStream;
-use tokio::sync::{broadcast, mpsc};
+use tokio::sync::{ mpsc};
 use tokio_util::codec::Framed;
-use std::env;
+
 #[derive(Debug)]
 enum FrameCommand {
     Send { data: Vec<String> },
-    Kill,
-}
-
-#[derive(Debug)]
-enum UdpCommand {
-    Start { data: String },
     Kill,
 }
 pub struct Connection {}
@@ -70,8 +62,7 @@ impl Connection {
     pub fn init(stream: TcpStream) {
         let (frame_send, mut conn_receive) = mpsc::channel::<FtlCommand>(2);
         let (conn_send, mut frame_receive) = mpsc::channel::<FrameCommand>(2);
-        let (upd_send, mut udp_receive) = mpsc::channel::<UdpCommand>(2);
-        let addr = stream.peer_addr().unwrap();
+        
         tokio::spawn(async move {
             let mut frame = Framed::new(stream, FtlCodec::new());
             loop {
@@ -115,15 +106,8 @@ impl Connection {
             let mut state = ConnectionState::new();
             loop {
                 match conn_receive.recv().await {
-                    Some(FtlCommand::Disconnect) => match upd_send.send(UdpCommand::Kill).await {
-                        Ok(_) => {
-                            println!("Udp task kill command sent");
-                            return;
-                        }
-                        Err(e) => {
-                            println!("Error killing udp command {:?}", e);
-                            break;
-                        }
+                    Some(FtlCommand::Disconnect) => {
+                        //TODO: Determine what needs to happen here
                     },
                     Some(FtlCommand::Dot) => {
                         let resp_string = "200 hi. Use UDP port 10170\n".to_string();
@@ -167,33 +151,6 @@ impl Connection {
                         println!("Nothing received from the frame");
                         return;
                     }
-                }
-            }
-        });
-        tokio::spawn(async move {
-            let (relay_send, mut relay_receive) = broadcast::channel::<UdpRelayCommand>(2);
-            let (recv_task, recv_handle) =
-                abortable(receive_start("bla".to_string(), relay_send.clone()));
-            let (relay_task, relay_handle) = abortable(relay_start(relay_send.clone()));
-            match udp_receive.recv().await {
-                Some(UdpCommand::Start { data }) => {
-                    tokio::spawn(recv_task);
-                    tokio::spawn(relay_task);
-                }
-                Some(UdpCommand::Kill) => {}
-                None => {}
-            }
-            loop {
-                match udp_receive.recv().await {
-                    Some(UdpCommand::Start { data }) => {
-                        println!("Task already started")
-                    }
-                    Some(UdpCommand::Kill) => {
-                        println!("Tasks aborted");
-                        relay_handle.abort();
-                        recv_handle.abort();
-                    }
-                    None => {}
                 }
             }
         });
