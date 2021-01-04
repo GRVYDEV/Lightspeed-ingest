@@ -35,8 +35,8 @@ pub struct ConnectionState {
 impl ConnectionState {
     pub fn get_payload(&self) -> String {
         match &self.hmac_payload {
-            Some(payload) => return payload.clone(),
-            None => return "".to_string(),
+            Some(payload) => payload.clone(),
+            None => "".to_string(),
         }
     }
     pub fn new() -> ConnectionState {
@@ -149,7 +149,7 @@ impl Connection {
                         //TODO: Determine what needs to happen here
                     }
                     //this command is where we tell the client what port to use
-                    //WARNING: This command does not work properly. 
+                    //WARNING: This command does not work properly.
                     //For some reason the client does not like the port we are sending and defaults to 65535 this is fine for now but will be fixed in the future
                     Some(FtlCommand::Dot) => {
                         let resp_string = "200 hi. Use UDP port 10170\n".to_string();
@@ -188,7 +188,7 @@ async fn handle_frame_command(
         Some(FrameCommand::Send { data }) => {
             let mut d: Vec<String> = data.clone();
             d.reverse();
-            while d.len() != 0 {
+            while !d.is_empty() {
                 let item = d.pop().unwrap();
                 match frame.send(item.clone()).await {
                     Ok(_) => {}
@@ -337,8 +337,8 @@ async fn handle_command(
                         ),
                     }
                 }
-                (None, Some(value)) => {}
-                (Some(key), None) => {}
+                (None, Some(_value)) => {}
+                (Some(_key), None) => {}
                 (None, None) => {}
             }
         }
