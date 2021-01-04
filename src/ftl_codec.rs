@@ -90,16 +90,16 @@ where
 }
 #[derive(Debug)]
 pub enum FtlError {
-    ConnectionClosed,
+    // ConnectionClosed,
     Unsupported(String),
-    CommandNotFound,
+    // CommandNotFound,
     Io(io::Error),
 }
 impl fmt::Display for FtlError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            FtlError::ConnectionClosed => write!(f, "Connection Closed"),
-            FtlError::CommandNotFound => write!(f, "Command not read"),
+            // FtlError::ConnectionClosed => write!(f, "Connection Closed"),
+            // FtlError::CommandNotFound => write!(f, "Command not read"),
             FtlError::Io(e) => write!(f, "{}", e),
             FtlError::Unsupported(s) => {
                 write!(f, "Unsupported FTL Command {}! Bug GRVY to support this", s)

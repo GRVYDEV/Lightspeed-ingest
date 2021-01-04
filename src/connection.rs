@@ -11,7 +11,7 @@ use tokio_util::codec::Framed;
 #[derive(Debug)]
 enum FrameCommand {
     Send { data: Vec<String> },
-    Kill,
+    // Kill,
 }
 pub struct Connection {}
 #[derive(Debug)]
@@ -201,10 +201,10 @@ async fn handle_frame_command(
 
             return Ok(());
         }
-        Some(FrameCommand::Kill) => {
-            println!("TODO: Implement Kill command");
-            return Ok(());
-        }
+        // Some(FrameCommand::Kill) => {
+        //     println!("TODO: Implement Kill command");
+        //     return Ok(());
+        // }
         None => {
             println!("Error receiving command from conn");
             return Err("Error receiving command from conn".to_string());
