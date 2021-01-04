@@ -148,7 +148,6 @@ async fn handle_frame_command(
                 let item = d.pop().unwrap();
                 match frame.send(item.clone()).await {
                     Ok(_) => {
-                        println!("sent {:?}", item);
                     }
                     Err(e) => {
                         println!("There was an error {:?}", e);
