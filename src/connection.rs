@@ -57,33 +57,33 @@ impl ConnectionState {
             audio_payload_type: None,
         }
     }
-    pub fn print(self) {
-        match self.protocol_version {
+    pub fn print(&self) {
+        match &self.protocol_version {
             Some(p) => println!("Protocol Version: {}", p),
             None => println!("Protocol Version: None"),
         }
-        match self.vendor_name {
+        match &self.vendor_name {
             Some(v) => println!("Vendor Name: {}", v),
             None => println!("Vendor Name: None"),
         }
-        match self.vendor_version {
+        match &self.vendor_version {
             Some(v) => println!("Vendor Version: {}", v),
             None => println!("Vendor Version: None"),
         }
-        match self.video_codec {
+        match &self.video_codec {
             Some(v) => println!("Video Codec: {}", v),
             None => println!("Video Codec: None"),
         }
 
-        match self.video_height {
+        match &self.video_height {
             Some(v) => println!("Video Height: {}", v),
             None => println!("Video Height: None"),
         }
-        match self.video_width {
+        match &self.video_width {
             Some(v) => println!("Video Width: {}", v),
             None => println!("Video Width: None"),
         }
-        match self.audio_codec {
+        match &self.audio_codec {
             Some(a) => println!("Audio Codec: {}", a),
             None => println!("Audio Codec: None"),
         }
