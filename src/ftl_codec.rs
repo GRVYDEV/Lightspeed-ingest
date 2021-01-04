@@ -42,36 +42,36 @@ impl Decoder for FtlCodec {
                 buf.advance(index + 4);
                 if command.as_str().contains("HMAC") {
                     self.reset();
-                    return Ok(Some(FtlCommand::HMAC));
+                    Ok(Some(FtlCommand::HMAC))
                 } else if command.as_str().contains("DISCONNECT") {
                     self.reset();
-                    return Ok(Some(FtlCommand::Disconnect));
+                    Ok(Some(FtlCommand::Disconnect))
                 } else if command.as_str().contains("CONNECT") {
-                    let commands: Vec<&str> = command.split(" ").collect();
+                    let commands: Vec<&str> = command.split(' ').collect();
                     let mut key = commands[2].to_string();
                     key.remove(0);
                     data.insert("channel_id".to_string(), commands[1].to_string());
                     data.insert("stream_key".to_string(), key);
                     self.reset();
-                    return Ok(Some(FtlCommand::Connect { data }));
-                } else if command.as_str().contains(":") {
-                    let commands: Vec<&str> = command.split(":").collect();
+                    Ok(Some(FtlCommand::Connect { data }))
+                } else if command.as_str().contains(':') {
+                    let commands: Vec<&str> = command.split(':').collect();
                     data.insert("key".to_string(), commands[0].to_string());
                     data.insert("value".to_string(), commands[1].trim().to_string());
                     self.reset();
-                    return Ok(Some(FtlCommand::Attribute { data }));
-                } else if command.as_str().contains(".") && command.len() == 1 {
+                    Ok(Some(FtlCommand::Attribute { data }))
+                } else if command.as_str().contains('.') && command.len() == 1 {
                     self.reset();
-                    return Ok(Some(FtlCommand::Dot));
+                    Ok(Some(FtlCommand::Dot))
                 } else if command.as_str().contains("PING") {
                     self.reset();
-                    return Ok(Some(FtlCommand::Ping));
+                    Ok(Some(FtlCommand::Ping))
                 } else {
                     self.reset();
-                    return Err(FtlError::Unsupported(command));
+                    Err(FtlError::Unsupported(command))
                 }
             }
-            None => return Ok(None),
+            None => Ok(None),
         }
     }
 }
