@@ -48,7 +48,7 @@
     <li><a href="#usage">Usage</a></li>
     <li><a href="#streaming-from-obs">Streaming From OBS</a>
         <ul>
-            <li><a href="#stream-key"></a></li>
+            <li><a href="#stream-key">Stream Key</a></li>
         </ul>  
     </li>
     <li><a href="#roadmap">Roadmap</a></li>
