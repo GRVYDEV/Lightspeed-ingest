@@ -114,35 +114,14 @@ impl Connection {
                         let mut resp = Vec::new();
                         resp.push(resp_string);
                         match conn_send.send(FrameCommand::Send { data: resp }).await {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                println!("Client connected!")
+                            }
                             Err(e) => {
                                 println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
                                 return;
                             }
                         }
-                        // match upd_send
-                        //     .send(UdpCommand::Start {
-                        //         data: "9112".to_string(),
-                        //     })
-                        //     .await
-                        // {
-                        //     Ok(_) => {
-                        //         let resp_string = "200 hi. Use UDP port 10170\n".to_string();
-                        //         let mut resp = Vec::new();
-                        //         resp.push(resp_string);
-                        //         match conn_send.send(FrameCommand::Send { data: resp }).await {
-                        //             Ok(_) => {}
-                        //             Err(e) => {
-                        //                 println!(
-                        //                     "Error sending to frame task (From: Handle HMAC) {:?}",
-                        //                     e
-                        //                 );
-                        //                 return;
-                        //             }
-                        //         }
-                        //     }
-                        //     Err(e) => println!("Error starting udp task"),
-                        // }
                     }
                     Some(command) => {
                         handle_command(command, &conn_send, &mut state).await;
@@ -200,7 +179,6 @@ async fn handle_command(
     match command {
         FtlCommand::HMAC => {
             resp = Vec::new();
-            println!("Handling HMAC Command");
             conn.hmac_payload = Some(generate_hmac());
             resp.push("200 ".to_string());
             resp.push(conn.get_payload());
@@ -217,11 +195,11 @@ async fn handle_command(
         }
         FtlCommand::Connect { data } => {
             resp = Vec::new();
-            println!("Handling Connect Command");
             match (data.get("stream_key"), data.get("channel_id")) {
                 (Some(key), Some(_channel_id)) => {
                     let client_hash = hex::decode(key).expect("error with hash decode");
                     //TODO: Add a more elegant stream key system
+                    // If you want to change your stream key do it here
                     let key =
                         hmac::Key::new(hmac::HMAC_SHA512, b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
                     match hmac::verify(
@@ -232,7 +210,7 @@ async fn handle_command(
                         &client_hash.as_slice(),
                     ) {
                         Ok(_) => {
-                            println!("Hashes equal!");
+                            println!("Hashes match!");
                             resp.push("200\n".to_string());
                             match sender.send(FrameCommand::Send { data: resp }).await {
                                 Ok(_) => {
@@ -264,7 +242,6 @@ async fn handle_command(
         }
         FtlCommand::Attribute { data } => {
             resp = Vec::new();
-            println!("Handling Attribute Command");
             match (data.get("key"), data.get("value")) {
                 (Some(key), Some(value)) => {
                     // println!("Key: {:?}, value: {:?}", key, value);
