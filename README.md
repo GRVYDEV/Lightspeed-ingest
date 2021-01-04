@@ -1,11 +1,156 @@
-# Ftl-Ingest-Server
+<p align="center">
+<a  href="https://github.com/GRVYDEV/Lightspeed-ingest">
+    <img src="images/lightspeedlogo.svg" alt="Logo" width="150" height="150">
+</a>
+</p>
+  <h1 align="center">Project Lightspeed Ingest</h1>
+<div align="center">
+  <a href="https://github.com/GRVYDEV/Lightspeed-ingest/stargazers"><img src="https://img.shields.io/github/stars/GRVYDEV/Lightspeed-ingest" alt="Stars Badge"/></a>
+<a href="https://github.com/GRVYDEV/Lightspeed-ingest/network/members"><img src="https://img.shields.io/github/forks/GRVYDEV/Lightspeed-ingest" alt="Forks Badge"/></a>
+<a href="https://github.com/GRVYDEV/Lightspeed-ingest/pulls"><img src="https://img.shields.io/github/issues-pr/GRVYDEV/Lightspeed-ingest" alt="Pull Requests Badge"/></a>
+<a href="https://github.com/GRVYDEV/Lightspeed-ingest/issues"><img src="https://img.shields.io/github/issues/GRVYDEV/Lightspeed-ingest" alt="Issues Badge"/></a>
+<a href="https://github.com/GRVYDEV/Lightspeed-ingest/graphs/contributors"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/GRVYDEV/Lightspeed-ingest?color=2b9348"></a>
+<a href="https://github.com/GRVYDEV/Lightspeed-ingest/blob/master/LICENSE"><img src="https://img.shields.io/github/license/GRVYDEV/Lightspeed-ingest?color=2b9348" alt="License Badge"/></a>
+</div>
+<br />
+<p align="center">
+  <p align="center">
+    A FTL handshake server written in Rust. This server listens on port 8084 and performs the FTL handshake with incoming connections
+    <!-- <br /> -->
+    <!-- <a href="https://github.com/GRVYDEV/Lightspeed-ingest"><strong>Explore the docs »</strong></a> -->
+    <br />
+    <br />
+    <a href="https://github.com/GRVYDEV/Lightspeed-ingest">View Demo</a>
+    ·
+    <a href="https://github.com/GRVYDEV/Lightspeed-ingest/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/GRVYDEV/Lightspeed-ingest/issues">Request Feature</a>
+  </p>
+</p>
 
-FTL ingest server that will be the starting point for a decentralized personal streaming server
+<!-- TABLE OF CONTENTS -->
+<details open="open">
+  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgements">Acknowledgements</a></li>
+  </ol>
+</details>
 
-Ingest server derived from https://github.com/Glimesh/janus-ftl-plugin
-# Plans
+<!-- ABOUT THE PROJECT -->
 
-- Easy installation
-- FTL ingest to WebRTC distribution using Pion
-- Phoenix Elixir web server which will allow live chatting
-- Entirely self-contained
+## About The Project
+
+<!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
+
+This is one of three components required for Project Lightspeed. Project Lightspeed is a fully self contained live streaming server. With this you will be able to deploy your own sub-second latency live streaming platform. This particular repository performs the FTL handshake with clients. It verifies the stream key and negotiates a port with the client connection that we will accept RTP packets on. In order for this to work the Project Lightspeed WebRTC is required in order to accept and broadcast the RTP packets. In order to view the live stream the Project Lightspeed React is required.
+
+### Built With
+
+- Rust
+
+### Dependencies
+
+- [Lightspeed WebRTC](https://github.com/GRVYDEV/Lightspeed-webrtc)
+- [Lightspeed React](https://github.com/GRVYDEV/Lightspeed-react)
+
+<!-- GETTING STARTED -->
+
+## Getting Started
+
+To get a local copy up and running follow these simple steps.
+
+### Prerequisites
+
+In order to run this Rust is required. Installation instructions can be found <a href="https://www.rust-lang.org/tools/install">here</a>. A C compiler is required as well. If you get a `linker cc not found error` try installing a C compiler
+
+### Installation
+
+```sh
+git clone https://github.com/GRVYDEV/Lightspeed-ingest.git
+cd Lightspeed-ingest
+cargo build
+```
+
+<!-- USAGE EXAMPLES -->
+
+## Usage
+
+To run type the following command. 
+
+```sh
+cd Lightspeed-ingest
+cargo run --release
+
+```
+
+#### Arguments
+| Argument  | Supported Values | Notes             |
+| :-------- | :--------------- | :---------------- |
+| `--addr`   | A valid IP address | This is the local Ip address of your machine. It defaults to localhost but should be set to your local IP. For example 10.17.0.5 This is where the server will listen for UDP packets and where it will host the websocket endpoint for SDP negotiation|
+
+
+
+<!-- _For more examples, please refer to the [Documentation](https://example.com)_ -->
+
+<!-- ROADMAP -->
+
+## Roadmap
+
+See the [open issues](https://github.com/GRVYDEV/Lightspeed-ingest/issues) for a list of proposed features (and known issues).
+
+<!-- CONTRIBUTING -->
+
+## Contributing
+
+Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+<!-- LICENSE -->
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+<!-- CONTACT -->
+
+## Contact
+
+Garrett Graves - [@grvydev](https://twitter.com/grvydev)
+
+Project Link: [https://github.com/GRVYDEV/Lightspeed-ingest](https://github.com/GRVYDEV/Lightspeed-ingest)
+
+<!-- ACKNOWLEDGEMENTS -->
+
+## Acknowledgements
+
+- [Sean Dubois](https://github.com/Sean-Der)
+- [Hayden McAfee](https://github.com/haydenmc)
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
+
