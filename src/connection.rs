@@ -5,7 +5,7 @@ use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
 use ring::hmac;
 use tokio::net::TcpStream;
-use tokio::sync::{ mpsc};
+use tokio::sync::mpsc;
 use tokio_util::codec::Framed;
 
 #[derive(Debug)]
@@ -57,20 +57,57 @@ impl ConnectionState {
             audio_payload_type: None,
         }
     }
+    pub fn print(&self) {
+        match &self.protocol_version {
+            Some(p) => println!("Protocol Version: {}", p),
+            None => println!("Protocol Version: None"),
+        }
+        match &self.vendor_name {
+            Some(v) => println!("Vendor Name: {}", v),
+            None => println!("Vendor Name: None"),
+        }
+        match &self.vendor_version {
+            Some(v) => println!("Vendor Version: {}", v),
+            None => println!("Vendor Version: None"),
+        }
+        match &self.video_codec {
+            Some(v) => println!("Video Codec: {}", v),
+            None => println!("Video Codec: None"),
+        }
+
+        match &self.video_height {
+            Some(v) => println!("Video Height: {}", v),
+            None => println!("Video Height: None"),
+        }
+        match &self.video_width {
+            Some(v) => println!("Video Width: {}", v),
+            None => println!("Video Width: None"),
+        }
+        match &self.audio_codec {
+            Some(a) => println!("Audio Codec: {}", a),
+            None => println!("Audio Codec: None"),
+        }
+    }
 }
 impl Connection {
+    //initialize connection
     pub fn init(stream: TcpStream) {
+        //Initialize 2 channels so we can communicate between the frame task and the command handling task
         let (frame_send, mut conn_receive) = mpsc::channel::<FtlCommand>(2);
         let (conn_send, mut frame_receive) = mpsc::channel::<FrameCommand>(2);
-        
+        //spawn a task whos sole job is to interact with the frame to send and receive information through the codec
         tokio::spawn(async move {
             let mut frame = Framed::new(stream, FtlCodec::new());
             loop {
+                //wait until there is a command present
                 match frame.next().await {
                     Some(Ok(command)) => {
+                        //send the command to the command handling task
                         match frame_send.send(command).await {
                             Ok(_) => {
+                                //wait for the command handling task to send us instructions
                                 let command = frame_receive.recv().await;
+                                //handle the instructions that we received
                                 match handle_frame_command(command, &mut frame).await {
                                     Ok(_) => {}
                                     Err(e) => {
@@ -103,46 +140,32 @@ impl Connection {
         });
 
         tokio::spawn(async move {
+            //initialize new connection state
             let mut state = ConnectionState::new();
             loop {
+                //wait until the frame task sends us a command
                 match conn_receive.recv().await {
                     Some(FtlCommand::Disconnect) => {
                         //TODO: Determine what needs to happen here
-                    },
+                    }
+                    //this command is where we tell the client what port to use
+                    //WARNING: This command does not work properly. 
+                    //For some reason the client does not like the port we are sending and defaults to 65535 this is fine for now but will be fixed in the future
                     Some(FtlCommand::Dot) => {
                         let resp_string = "200 hi. Use UDP port 10170\n".to_string();
                         let mut resp = Vec::new();
                         resp.push(resp_string);
+                        //tell the frame task to send our response
                         match conn_send.send(FrameCommand::Send { data: resp }).await {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                println!("Client connected!");
+                                state.print()
+                            }
                             Err(e) => {
                                 println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
                                 return;
                             }
                         }
-                        // match upd_send
-                        //     .send(UdpCommand::Start {
-                        //         data: "9112".to_string(),
-                        //     })
-                        //     .await
-                        // {
-                        //     Ok(_) => {
-                        //         let resp_string = "200 hi. Use UDP port 10170\n".to_string();
-                        //         let mut resp = Vec::new();
-                        //         resp.push(resp_string);
-                        //         match conn_send.send(FrameCommand::Send { data: resp }).await {
-                        //             Ok(_) => {}
-                        //             Err(e) => {
-                        //                 println!(
-                        //                     "Error sending to frame task (From: Handle HMAC) {:?}",
-                        //                     e
-                        //                 );
-                        //                 return;
-                        //             }
-                        //         }
-                        //     }
-                        //     Err(e) => println!("Error starting udp task"),
-                        // }
                     }
                     Some(command) => {
                         handle_command(command, &conn_send, &mut state).await;
@@ -168,9 +191,7 @@ async fn handle_frame_command(
             while d.len() != 0 {
                 let item = d.pop().unwrap();
                 match frame.send(item.clone()).await {
-                    Ok(_) => {
-                        println!("sent {:?}", item);
-                    }
+                    Ok(_) => {}
                     Err(e) => {
                         println!("There was an error {:?}", e);
                         return Err(format!("There was an error {:?}", e));
@@ -200,7 +221,6 @@ async fn handle_command(
     match command {
         FtlCommand::HMAC => {
             resp = Vec::new();
-            println!("Handling HMAC Command");
             conn.hmac_payload = Some(generate_hmac());
             resp.push("200 ".to_string());
             resp.push(conn.get_payload());
@@ -217,13 +237,16 @@ async fn handle_command(
         }
         FtlCommand::Connect { data } => {
             resp = Vec::new();
-            println!("Handling Connect Command");
+            //make sure we receive a valid channel id and stream key
             match (data.get("stream_key"), data.get("channel_id")) {
                 (Some(key), Some(_channel_id)) => {
+                    //decode the client hash
                     let client_hash = hex::decode(key).expect("error with hash decode");
                     //TODO: Add a more elegant stream key system
+                    // If you want to change your stream key do it here
                     let key =
                         hmac::Key::new(hmac::HMAC_SHA512, b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
+                    //compare the two hashes to ensure they match
                     match hmac::verify(
                         &key,
                         decode(conn.get_payload().into_bytes())
@@ -232,7 +255,7 @@ async fn handle_command(
                         &client_hash.as_slice(),
                     ) {
                         Ok(_) => {
-                            println!("Hashes equal!");
+                            println!("Hashes match!");
                             resp.push("200\n".to_string());
                             match sender.send(FrameCommand::Send { data: resp }).await {
                                 Ok(_) => {
@@ -264,7 +287,6 @@ async fn handle_command(
         }
         FtlCommand::Attribute { data } => {
             resp = Vec::new();
-            println!("Handling Attribute Command");
             match (data.get("key"), data.get("value")) {
                 (Some(key), Some(value)) => {
                     // println!("Key: {:?}, value: {:?}", key, value);
