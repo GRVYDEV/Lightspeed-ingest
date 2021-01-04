@@ -5,7 +5,7 @@ use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
 use ring::hmac;
 use tokio::net::TcpStream;
-use tokio::sync::{ mpsc};
+use tokio::sync::mpsc;
 use tokio_util::codec::Framed;
 
 #[derive(Debug)]
@@ -57,12 +57,42 @@ impl ConnectionState {
             audio_payload_type: None,
         }
     }
+    pub fn print(self) {
+        match self.protocol_version {
+            Some(p) => println!("Protocol Version: {}", p),
+            None => println!("Protocol Version: None"),
+        }
+        match self.vendor_name {
+            Some(v) => println!("Vendor Name: {}", v),
+            None => println!("Vendor Name: None"),
+        }
+        match self.vendor_version {
+            Some(v) => println!("Vendor Version: {}", v),
+            None => println!("Vendor Version: None"),
+        }
+        match self.video_codec {
+            Some(v) => println!("Video Codec: {}", v),
+            None => println!("Video Codec: None"),
+        }
+
+        match self.video_height {
+            Some(v) => println!("Video Height: {}", v),
+            None => println!("Video Height: None"),
+        }
+        match self.video_width {
+            Some(v) => println!("Video Width: {}", v),
+            None => println!("Video Width: None"),
+        }
+        match self.audio_codec {
+            Some(a) => println!("Audio Codec: {}", a),
+            None => println!("Audio Codec: None"),
+        }
+    }
 }
 impl Connection {
     pub fn init(stream: TcpStream) {
         let (frame_send, mut conn_receive) = mpsc::channel::<FtlCommand>(2);
         let (conn_send, mut frame_receive) = mpsc::channel::<FrameCommand>(2);
-        
         tokio::spawn(async move {
             let mut frame = Framed::new(stream, FtlCodec::new());
             loop {
@@ -108,7 +138,7 @@ impl Connection {
                 match conn_receive.recv().await {
                     Some(FtlCommand::Disconnect) => {
                         //TODO: Determine what needs to happen here
-                    },
+                    }
                     Some(FtlCommand::Dot) => {
                         let resp_string = "200 hi. Use UDP port 10170\n".to_string();
                         let mut resp = Vec::new();
@@ -116,7 +146,7 @@ impl Connection {
                         match conn_send.send(FrameCommand::Send { data: resp }).await {
                             Ok(_) => {
                                 println!("Client connected!");
-                                println!("{:?}", state);
+                                state.print()
                             }
                             Err(e) => {
                                 println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
@@ -148,8 +178,7 @@ async fn handle_frame_command(
             while d.len() != 0 {
                 let item = d.pop().unwrap();
                 match frame.send(item.clone()).await {
-                    Ok(_) => {
-                    }
+                    Ok(_) => {}
                     Err(e) => {
                         println!("There was an error {:?}", e);
                         return Err(format!("There was an error {:?}", e));
