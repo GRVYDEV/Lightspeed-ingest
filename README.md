@@ -101,13 +101,6 @@ cargo run --release
 
 ```
 
-#### Arguments
-| Argument  | Supported Values | Notes             |
-| :-------- | :--------------- | :---------------- |
-| `--addr`   | A valid IP address | This is the local Ip address of your machine. It defaults to localhost but should be set to your local IP. For example 10.17.0.5 This is where the server will listen for UDP packets and where it will host the websocket endpoint for SDP negotiation|
-
-
-
 <!-- _For more examples, please refer to the [Documentation](https://example.com)_ -->
 
 <!-- ROADMAP -->
