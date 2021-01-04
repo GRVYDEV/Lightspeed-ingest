@@ -115,7 +115,8 @@ impl Connection {
                         resp.push(resp_string);
                         match conn_send.send(FrameCommand::Send { data: resp }).await {
                             Ok(_) => {
-                                println!("Client connected!")
+                                println!("Client connected!");
+                                println!("{:?}", state);
                             }
                             Err(e) => {
                                 println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
