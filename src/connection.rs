@@ -36,7 +36,7 @@ impl ConnectionState {
     pub fn get_payload(&self) -> String {
         match &self.hmac_payload {
             Some(payload) => payload.clone(),
-            None => "".to_string(),
+            None => String::new(),
         }
     }
     pub fn new() -> ConnectionState {
@@ -367,7 +367,7 @@ fn generate_hmac() -> String {
     let dist = Uniform::new(0x00, 0xFF);
     let mut hmac_payload: Vec<u8> = Vec::new();
     let mut rng = thread_rng();
-    for _i in 0..128 {
+    for _ in 0..128 {
         hmac_payload.push(rng.sample(dist));
     }
     encode(hmac_payload.as_slice())
