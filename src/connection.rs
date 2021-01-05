@@ -1,12 +1,15 @@
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
-use rand::distributions::Uniform;
 use rand::{thread_rng, Rng};
+use rand::distributions::Alphanumeric;
+use rand::distributions::Uniform;
 use ring::hmac;
+use std::fs;
+use tokio_util::codec::Framed;
 use tokio::net::TcpStream;
 use tokio::sync::mpsc;
-use tokio_util::codec::Framed;
+
 
 #[derive(Debug)]
 enum FrameCommand {
@@ -245,7 +248,7 @@ async fn handle_command(
                     //TODO: Add a more elegant stream key system
                     // If you want to change your stream key do it here
                     let key =
-                        hmac::Key::new(hmac::HMAC_SHA512, b"aBcDeFgHiJkLmNoPqRsTuVwXyZ123456");
+                        hmac::Key::new(hmac::HMAC_SHA512, read_stream_key().as_bytes());
                     //compare the two hashes to ensure they match
                     match hmac::verify(
                         &key,
@@ -272,7 +275,6 @@ async fn handle_command(
                             return;
                         }
                     };
-                    //temp stream key aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
                 }
 
                 (None, _) => {
@@ -371,4 +373,29 @@ fn generate_hmac() -> String {
         hmac_payload.push(rng.sample(dist));
     }
     encode(hmac_payload.as_slice())
+}
+
+
+fn generate_stream_key() -> String {
+    let stream_key: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
+    fs::write("hash", &stream_key).expect("Unable to write file");
+
+    stream_key
+}
+
+pub fn read_stream_key() -> String {
+    let stream_key: String;
+    let _ = match fs::read_to_string("hash") {
+        Err(_) => {
+            stream_key = generate_stream_key();
+            println!("\nCould not read stream key. Re-generating...");
+            println!("Your stream key is: {}\n", stream_key);
+        },
+        Ok(file) => {
+            println!("Loading existing stream key...");
+            stream_key = file;    
+        }
+    };
+
+    stream_key
 }

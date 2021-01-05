@@ -4,6 +4,9 @@ use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // TODO: fix double reading stream key
+    let _: String = connection::read_stream_key();
+
     println!("Listening on port 8084");
     let listener = TcpListener::bind("0.0.0.0:8084").await?;
 
