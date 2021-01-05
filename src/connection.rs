@@ -152,7 +152,7 @@ impl Connection {
                     //WARNING: This command does not work properly.
                     //For some reason the client does not like the port we are sending and defaults to 65535 this is fine for now but will be fixed in the future
                     Some(FtlCommand::Dot) => {
-                        let resp_string = "200 hi. Use UDP port 10170\n".to_string();
+                        let resp_string = "200 hi. Use UDP port 65535\n".to_string();
                         let mut resp = Vec::new();
                         resp.push(resp_string);
                         //tell the frame task to send our response
@@ -217,14 +217,10 @@ async fn handle_command(
     sender: &mpsc::Sender<FrameCommand>,
     conn: &mut ConnectionState,
 ) {
-    let mut resp: Vec<String>;
     match command {
         FtlCommand::HMAC => {
-            resp = Vec::new();
             conn.hmac_payload = Some(generate_hmac());
-            resp.push("200 ".to_string());
-            resp.push(conn.get_payload());
-            resp.push("\n".to_string());
+            let resp = vec!["200 ".to_string(), conn.get_payload(), "\n".to_string()];
             match sender.send(FrameCommand::Send { data: resp }).await {
                 Ok(_) => {
                     return;
@@ -236,7 +232,6 @@ async fn handle_command(
             }
         }
         FtlCommand::Connect { data } => {
-            resp = Vec::new();
             //make sure we receive a valid channel id and stream key
             match (data.get("stream_key"), data.get("channel_id")) {
                 (Some(key), Some(_channel_id)) => {
@@ -256,7 +251,7 @@ async fn handle_command(
                     ) {
                         Ok(_) => {
                             println!("Hashes match!");
-                            resp.push("200\n".to_string());
+                            let resp = vec!["200\n".to_string()];
                             match sender.send(FrameCommand::Send { data: resp }).await {
                                 Ok(_) => {
                                     return;
@@ -286,7 +281,6 @@ async fn handle_command(
             }
         }
         FtlCommand::Attribute { data } => {
-            resp = Vec::new();
             match (data.get("key"), data.get("value")) {
                 (Some(key), Some(value)) => {
                     // println!("Key: {:?}, value: {:?}", key, value);
@@ -326,7 +320,9 @@ async fn handle_command(
                             println!("Invalid attribute command. Attribute parsing failed. Key was {:?}, Value was {:?}", key, value)
                         }
                     }
-                    resp.push("200\n".to_string());
+                    // No actual response is expected but if we do not respond at all the client
+                    // stops sending for some reason.
+                    let resp = vec!["".to_string()];
                     match sender.send(FrameCommand::Send { data: resp }).await {
                         Ok(_) => {
                             return;
@@ -344,8 +340,7 @@ async fn handle_command(
         }
         FtlCommand::Ping => {
             // println!("Handling PING Command");
-            resp = Vec::new();
-            resp.push("201\n".to_string());
+            let resp = vec!["201\n".to_string()];
             match sender.send(FrameCommand::Send { data: resp }).await {
                 Ok(_) => {
                     return;
