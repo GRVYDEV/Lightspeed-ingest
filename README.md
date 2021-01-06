@@ -20,7 +20,7 @@
     <!-- <a href="https://github.com/GRVYDEV/Lightspeed-ingest"><strong>Explore the docs »</strong></a> -->
     <br />
     <br />
-    <a href="https://youtu.be/bOUd6asenCY">View Demo</a>
+    <a href="https://youtu.be/Dzin4_A8RDs">View Demo</a>
     ·
     <a href="https://github.com/GRVYDEV/Lightspeed-ingest/issues">Report Bug</a>
     ·
