@@ -2,8 +2,7 @@ use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
 use rand::{thread_rng, Rng};
-use rand::distributions::Alphanumeric;
-use rand::distributions::Uniform;
+use rand::distributions::{Alphanumeric, Uniform};
 use ring::hmac;
 use std::fs;
 use tokio_util::codec::Framed;
@@ -245,10 +244,7 @@ async fn handle_command(
                 (Some(key), Some(_channel_id)) => {
                     //decode the client hash
                     let client_hash = hex::decode(key).expect("error with hash decode");
-                    //TODO: Add a more elegant stream key system
-                    // If you want to change your stream key do it here
-                    let key =
-                        hmac::Key::new(hmac::HMAC_SHA512, read_stream_key().as_bytes());
+                    let key = hmac::Key::new(hmac::HMAC_SHA512, &read_stream_key(false));
                     //compare the two hashes to ensure they match
                     match hmac::verify(
                         &key,
@@ -375,27 +371,50 @@ fn generate_hmac() -> String {
     encode(hmac_payload.as_slice())
 }
 
-
-fn generate_stream_key() -> String {
+fn generate_stream_key() -> Vec<u8> {
     let stream_key: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
-    fs::write("hash", &stream_key).expect("Unable to write file");
+    fs::write("hash", hex::encode(&stream_key)).expect("Unable to write file");
 
-    stream_key
+    stream_key.as_bytes().to_vec()
 }
 
-pub fn read_stream_key() -> String {
-    let stream_key: String;
-    let _ = match fs::read_to_string("hash") {
-        Err(_) => {
-            stream_key = generate_stream_key();
-            println!("\nCould not read stream key. Re-generating...");
-            println!("Your stream key is: {}\n", stream_key);
-        },
-        Ok(file) => {
-            println!("Loading existing stream key...");
-            stream_key = file;    
-        }
-    };
+fn print_stream_key(stream_key: Vec<u8>) {
+    println!(
+        "Your stream key is: 77-{}",
+        std::str::from_utf8(&stream_key).unwrap()
+    );
+}
 
-    stream_key
+pub fn read_stream_key(startup: bool) -> Vec<u8> {
+    if startup {
+        let _ = match fs::read_to_string("hash") {
+            Err(_) => {
+                let stream_key = generate_stream_key();
+                println!("\nCould not read stream key. Re-generating...");
+                print_stream_key(stream_key.to_vec());
+
+                return stream_key;
+            }
+            Ok(file) => {
+                println!("\nLoading existing stream key...");
+
+                let _ = match hex::decode(file) {
+                    Err(_) => {
+                        let stream_key = generate_stream_key();
+                        println!("Error decoding stream key. Re-generating...");
+                        print_stream_key(stream_key.to_vec());
+
+                        return stream_key;
+                    }
+                    Ok(stream_key) => {
+                        print_stream_key(stream_key.to_vec());
+                        return stream_key;
+                    }
+                };
+            }
+        };
+    } else {
+        let file = fs::read_to_string("hash").unwrap();
+        return hex::decode(file).unwrap();
+    }
 }
