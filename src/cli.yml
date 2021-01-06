@@ -1,0 +1,19 @@
+name: Lightspeed Ingest
+version: "0.1.0"
+author: "Garrett Graves <gravesg57@gmail.com>"
+about: "A FTL handshake server written in Rust"
+args:
+    - address:
+        short: a
+        long: address
+        env: LS_INGEST_ADDR
+        value_name: HOSTNAME_OR_IP
+        help: Specify which address to bind to (defaults to 0.0.0.0)
+        takes_value: true
+    - port:
+        short: p
+        long: port
+        env: LS_INGEST_PORT
+        value_name: PORT
+        help: Specify which port to use (defaults to 8084)
+        takes_value: true

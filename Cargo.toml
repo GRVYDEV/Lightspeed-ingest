@@ -7,13 +7,14 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bytes = "1.0.0"
+clap = {version = "2.33.3", features = ["yaml"]}
+futures = "0.3.8"
+futures-util = "0.3.8"
+hex = "0.4.2"
+rand = "0.8.1"
+regex = "1"
+ring = "0.16.19"
+rtp-rs = "0.5.0"
 tokio = { version = "1.0.1", features = ["full"] }
 tokio-util = { version = "0.6.0", features = ["codec"] }
-bytes = "1.0.0"
-futures = "0.3.8"
-rand = "0.8.1"
-hex = "0.4.2"
-futures-util = "0.3.8"
-ring = "0.16.19"
-regex = "1"
-rtp-rs = "0.5.0"

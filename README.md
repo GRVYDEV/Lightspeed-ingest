@@ -97,13 +97,22 @@ cargo build
 <!-- USAGE EXAMPLES -->
 
 ## Usage
-
-To run type the following command. 
+To print out full command line usage information.
 
 ```sh
-cd Lightspeed-ingest
-cargo run --release
+cargo run -- -h
+```
 
+To run it with default settings type the following command. 
+
+```sh
+cargo run --release
+```
+
+To specify an address and/or port
+
+```sh
+cargo run --release -- -a 12.34.56.78 -p 8084
 ```
 
 <!-- _For more examples, please refer to the [Documentation](https://example.com)_ -->
