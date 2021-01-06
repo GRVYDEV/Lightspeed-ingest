@@ -408,6 +408,7 @@ pub fn read_stream_key(startup: bool) -> Vec<u8> {
             }
         };
     } else {
-        hex::decode(fs::read_to_string("hash").unwrap()).unwrap()
+        let file = fs::read_to_string("hash").unwrap();
+        hex::decode(file).unwrap()
     }
 }
