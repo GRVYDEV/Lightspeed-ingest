@@ -367,7 +367,7 @@ fn generate_hmac() -> String {
 }
 
 fn generate_stream_key() -> Vec<u8> {
-    let stream_key: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
+    let stream_key: String = String::from_utf8(thread_rng().sample_iter(&Alphanumeric).take(32).collect()).expect("Failed to convert random key to string! Please open an issue and tell the devs to handle this!");
     fs::write("hash", hex::encode(&stream_key)).expect("Unable to write file");
 
     stream_key.as_bytes().to_vec()
