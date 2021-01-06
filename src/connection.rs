@@ -1,14 +1,13 @@
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
-use rand::{thread_rng, Rng};
 use rand::distributions::{Alphanumeric, Uniform};
+use rand::{thread_rng, Rng};
 use ring::hmac;
 use std::fs;
-use tokio_util::codec::Framed;
 use tokio::net::TcpStream;
 use tokio::sync::mpsc;
-
+use tokio_util::codec::Framed;
 
 #[derive(Debug)]
 enum FrameCommand {
