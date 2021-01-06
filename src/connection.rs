@@ -409,6 +409,6 @@ pub fn read_stream_key(startup: bool) -> Vec<u8> {
         };
     } else {
         let file = fs::read_to_string("hash").unwrap();
-        return hex::decode(file).unwrap();
+        hex::decode(file).unwrap()
     }
 }
