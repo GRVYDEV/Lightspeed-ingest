@@ -109,10 +109,10 @@ To run it with default settings type the following command.
 cargo run --release
 ```
 
-To specify an address and/or port
+To specify which address to bind to.
 
 ```sh
-cargo run --release -- -a 12.34.56.78 -p 8084
+cargo run --release -- -a 12.34.56.78
 ```
 
 <!-- _For more examples, please refer to the [Documentation](https://example.com)_ -->
