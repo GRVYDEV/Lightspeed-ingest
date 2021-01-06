@@ -9,6 +9,7 @@ use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+
     let default_bind_address = "0.0.0.0";
 
     // update cli.yml to add more flags
@@ -30,9 +31,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         None => default_bind_address
     };
-
+    
+  
+    let _ = connection::read_stream_key(true);
     println!("Listening on {} port 8084", bind_address);
     let listener = TcpListener::bind(format!("{}:8084", bind_address)).await?;
+
 
     loop {
         // Wait until someone tries to connect then handle the connection in a new task
