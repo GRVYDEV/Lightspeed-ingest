@@ -44,7 +44,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     File::create(path).unwrap(),
                 ))
             } else {
-                ()
             }
         }
         None => (),

@@ -1,14 +1,14 @@
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
-use log::{info, warn, error};
-use rand::{thread_rng, Rng};
+use log::{error, info, warn};
 use rand::distributions::{Alphanumeric, Uniform};
+use rand::{thread_rng, Rng};
 use ring::hmac;
 use std::fs;
-use tokio_util::codec::Framed;
 use tokio::net::TcpStream;
 use tokio::sync::mpsc;
+use tokio_util::codec::Framed;
 
 #[derive(Debug)]
 enum FrameCommand {
@@ -113,10 +113,7 @@ impl Connection {
                                 match handle_frame_command(command, &mut frame).await {
                                     Ok(_) => {}
                                     Err(e) => {
-                                        error!(
-                                            "There was an error handing frame command {:?}",
-                                            e
-                                        );
+                                        error!("There was an error handing frame command {:?}", e);
                                         return;
                                     }
                                 };
@@ -377,7 +374,7 @@ fn generate_stream_key() -> Vec<u8> {
 
 fn print_stream_key(stream_key: Vec<u8>) {
     info!(
-        // ANSI escape codes to color stream key output 
+        // ANSI escape codes to color stream key output
         "Your stream key is: \x1b[31;1;4m77-{}\x1b[0m",
         std::str::from_utf8(&stream_key).unwrap()
     );
