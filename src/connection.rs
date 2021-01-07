@@ -377,6 +377,7 @@ fn generate_stream_key() -> Vec<u8> {
 
 fn print_stream_key(stream_key: Vec<u8>) {
     info!(
+        // ANSI escape codes to color stream key output 
         "Your stream key is: \x1b[31;1;4m77-{}\x1b[0m",
         std::str::from_utf8(&stream_key).unwrap()
     );
@@ -384,16 +385,16 @@ fn print_stream_key(stream_key: Vec<u8>) {
 
 pub fn read_stream_key(startup: bool) -> Vec<u8> {
     if startup {
-        let _ = match fs::read_to_string("hash") {
+        match fs::read_to_string("hash") {
             Err(_) => {
                 let stream_key = generate_stream_key();
-                warn!("\nCould not read stream key. Re-generating...");
+                warn!("Could not read stream key. Re-generating...");
                 print_stream_key(stream_key.to_vec());
 
                 return stream_key;
             }
             Ok(file) => {
-                info!("\nLoading existing stream key...");
+                info!("Loading existing stream key...");
 
                 let _ = match hex::decode(file) {
                     Err(_) => {

@@ -10,3 +10,12 @@ args:
         value_name: HOSTNAME_OR_IP
         help: Specify which address to bind to (defaults to 0.0.0.0)
         takes_value: true
+    
+    # Optional path to the log file, creates a simplelog::WriteLogger
+    - log-file:
+        short: l
+        long: log-file
+        env: LS_LOG
+        value_name: LOG_FILE_PATH
+        help: Optionally specify where to store logs
+        takes_value: true

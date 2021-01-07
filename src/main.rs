@@ -1,22 +1,18 @@
 #[macro_use]
 extern crate clap;
 extern crate log;
+extern crate simplelog;
 use clap::App;
-use env_logger::Env;
 use log::info;
+use simplelog::*;
 
 mod connection;
 mod ftl_codec;
+use std::fs::File;
 use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // TODO: allow ENV_VARS to define this
-    let env = Env::default()
-        .filter_or("MY_LOG_LEVEL", "info")
-        .write_style_or("MY_LOG_STYLE", "always");
-    env_logger::init_from_env(env);
-
     let default_bind_address = "0.0.0.0";
     // update cli.yml to add more flags
     let cli_cfg = load_yaml!("cli.yml");
@@ -36,6 +32,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         None => default_bind_address,
     };
+
+    let mut loggers: Vec<Box<dyn SharedLogger>> =
+        vec![TermLogger::new(LevelFilter::Info, Config::default(), TerminalMode::Mixed).unwrap()];
+    match matches.value_of("log-file") {
+        Some(path) => {
+            if !path.is_empty() {
+                loggers.push(WriteLogger::new(
+                    LevelFilter::Info,
+                    Config::default(),
+                    File::create(path).unwrap(),
+                ))
+            } else {
+                ()
+            }
+        }
+        None => (),
+    };
+    let _ = CombinedLogger::init(loggers);
 
     let _ = connection::read_stream_key(true);
     info!("Listening on {}:8084", bind_address);
