@@ -1,14 +1,13 @@
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
-use rand::{thread_rng, Rng};
 use rand::distributions::{Alphanumeric, Uniform};
+use rand::{thread_rng, Rng};
 use ring::hmac;
 use std::fs;
-use tokio_util::codec::Framed;
 use tokio::net::TcpStream;
 use tokio::sync::mpsc;
-
+use tokio_util::codec::Framed;
 
 #[derive(Debug)]
 enum FrameCommand {
@@ -367,7 +366,7 @@ fn generate_hmac() -> String {
 }
 
 fn generate_stream_key() -> Vec<u8> {
-    let stream_key: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
+    let stream_key: String = String::from_utf8(thread_rng().sample_iter(&Alphanumeric).take(32).collect()).expect("Failed to convert random key to string! Please open an issue and tell the devs to handle this!");
     fs::write("hash", hex::encode(&stream_key)).expect("Unable to write file");
 
     stream_key.as_bytes().to_vec()
@@ -410,6 +409,6 @@ pub fn read_stream_key(startup: bool) -> Vec<u8> {
         };
     } else {
         let file = fs::read_to_string("hash").unwrap();
-        return hex::decode(file).unwrap();
+        hex::decode(file).unwrap()
     }
 }
