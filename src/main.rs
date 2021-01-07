@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate clap;
+extern crate log;
 use clap::App;
+use env_logger::Env;
+use log::info;
 
 mod connection;
 mod ftl_codec;
@@ -8,8 +11,13 @@ use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let default_bind_address = "0.0.0.0";
+    // TODO: allow ENV_VARS to define this
+    let env = Env::default()
+        .filter_or("MY_LOG_LEVEL", "info")
+        .write_style_or("MY_LOG_STYLE", "always");
+    env_logger::init_from_env(env);
 
+    let default_bind_address = "0.0.0.0";
     // update cli.yml to add more flags
     let cli_cfg = load_yaml!("cli.yml");
     let matches = App::from_yaml(cli_cfg).get_matches();
@@ -30,7 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let _ = connection::read_stream_key(true);
-    println!("Listening on {} port 8084", bind_address);
+    info!("Listening on {}:8084", bind_address);
     let listener = TcpListener::bind(format!("{}:8084", bind_address)).await?;
 
     loop {
