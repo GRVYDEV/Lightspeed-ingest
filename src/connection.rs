@@ -1,6 +1,7 @@
 use crate::ftl_codec::{FtlCodec, FtlCommand};
 use futures::{SinkExt, StreamExt};
 use hex::{decode, encode};
+use log::{error, info, warn};
 use rand::distributions::{Alphanumeric, Uniform};
 use rand::{thread_rng, Rng};
 use ring::hmac;
@@ -60,33 +61,33 @@ impl ConnectionState {
     }
     pub fn print(&self) {
         match &self.protocol_version {
-            Some(p) => println!("Protocol Version: {}", p),
-            None => println!("Protocol Version: None"),
+            Some(p) => info!("Protocol Version: {}", p),
+            None => warn!("Protocol Version: None"),
         }
         match &self.vendor_name {
-            Some(v) => println!("Vendor Name: {}", v),
-            None => println!("Vendor Name: None"),
+            Some(v) => info!("Vendor Name: {}", v),
+            None => warn!("Vendor Name: None"),
         }
         match &self.vendor_version {
-            Some(v) => println!("Vendor Version: {}", v),
-            None => println!("Vendor Version: None"),
+            Some(v) => info!("Vendor Version: {}", v),
+            None => warn!("Vendor Version: None"),
         }
         match &self.video_codec {
-            Some(v) => println!("Video Codec: {}", v),
-            None => println!("Video Codec: None"),
+            Some(v) => info!("Video Codec: {}", v),
+            None => warn!("Video Codec: None"),
         }
 
         match &self.video_height {
-            Some(v) => println!("Video Height: {}", v),
-            None => println!("Video Height: None"),
+            Some(v) => info!("Video Height: {}", v),
+            None => warn!("Video Height: None"),
         }
         match &self.video_width {
-            Some(v) => println!("Video Width: {}", v),
-            None => println!("Video Width: None"),
+            Some(v) => info!("Video Width: {}", v),
+            None => warn!("Video Width: None"),
         }
         match &self.audio_codec {
-            Some(a) => println!("Audio Codec: {}", a),
-            None => println!("Audio Codec: None"),
+            Some(a) => info!("Audio Codec: {}", a),
+            None => warn!("Audio Codec: None"),
         }
     }
 }
@@ -112,16 +113,13 @@ impl Connection {
                                 match handle_frame_command(command, &mut frame).await {
                                     Ok(_) => {}
                                     Err(e) => {
-                                        println!(
-                                            "There was an error handing frame command {:?}",
-                                            e
-                                        );
+                                        error!("There was an error handing frame command {:?}", e);
                                         return;
                                     }
                                 };
                             }
                             Err(e) => {
-                                println!(
+                                error!(
                                     "There was an error sending the command to the connection Error: {:?}", e
                                 );
                                 return;
@@ -129,11 +127,11 @@ impl Connection {
                         };
                     }
                     Some(Err(e)) => {
-                        println!("There was an error {:?}", e);
+                        error!("There was an error {:?}", e);
                         return;
                     }
                     None => {
-                        println!("There was a socket reading error");
+                        error!("There was a socket reading error");
                         return;
                     }
                 };
@@ -159,11 +157,11 @@ impl Connection {
                         //tell the frame task to send our response
                         match conn_send.send(FrameCommand::Send { data: resp }).await {
                             Ok(_) => {
-                                println!("Client connected!");
+                                info!("Client connected!");
                                 state.print()
                             }
                             Err(e) => {
-                                println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
+                                error!("Error sending to frame task (From: Handle HMAC) {:?}", e);
                                 return;
                             }
                         }
@@ -172,7 +170,7 @@ impl Connection {
                         handle_command(command, &conn_send, &mut state).await;
                     }
                     None => {
-                        println!("Nothing received from the frame");
+                        error!("Nothing received from the frame");
                         return;
                     }
                 }
@@ -194,7 +192,7 @@ async fn handle_frame_command(
                 match frame.send(item.clone()).await {
                     Ok(_) => {}
                     Err(e) => {
-                        println!("There was an error {:?}", e);
+                        info!("There was an error {:?}", e);
                         return Err(format!("There was an error {:?}", e));
                     }
                 }
@@ -203,11 +201,11 @@ async fn handle_frame_command(
             return Ok(());
         }
         // Some(FrameCommand::Kill) => {
-        //     println!("TODO: Implement Kill command");
+        //     info!("TODO: Implement Kill command");
         //     return Ok(());
         // }
         None => {
-            println!("Error receiving command from conn");
+            info!("Error receiving command from conn");
             return Err("Error receiving command from conn".to_string());
         }
     };
@@ -227,7 +225,7 @@ async fn handle_command(
                     return;
                 }
                 Err(e) => {
-                    println!("Error sending to frame task (From: Handle HMAC) {:?}", e);
+                    error!("Error sending to frame task (From: Handle HMAC) {:?}", e);
                     return;
                 }
             }
@@ -248,31 +246,31 @@ async fn handle_command(
                         &client_hash.as_slice(),
                     ) {
                         Ok(_) => {
-                            println!("Hashes match!");
+                            info!("Hashes match!");
                             let resp = vec!["200\n".to_string()];
                             match sender.send(FrameCommand::Send { data: resp }).await {
                                 Ok(_) => {
                                     return;
                                 }
-                                Err(e) => println!(
+                                Err(e) => error!(
                                     "Error sending to frame task (From: Handle Connection) {:?}",
                                     e
                                 ),
                             }
                         }
                         _ => {
-                            println!("Hashes do not equal");
+                            error!("Hashes do not equal");
                             return;
                         }
                     };
                 }
 
                 (None, _) => {
-                    println!("No stream key attached to connect command");
+                    error!("No stream key attached to connect command");
                     return;
                 }
                 (_, None) => {
-                    println!("No channel id attached to connect command");
+                    error!("No channel id attached to connect command");
                     return;
                 }
             }
@@ -280,7 +278,7 @@ async fn handle_command(
         FtlCommand::Attribute { data } => {
             match (data.get("key"), data.get("value")) {
                 (Some(key), Some(value)) => {
-                    // println!("Key: {:?}, value: {:?}", key, value);
+                    // info!("Key: {:?}, value: {:?}", key, value);
                     match key.as_str() {
                         "ProtocolVersion" => conn.protocol_version = Some(value.to_string()),
                         "VendorName" => conn.vendor_name = Some(value.to_string()),
@@ -290,7 +288,7 @@ async fn handle_command(
                                 "true" => conn.video = true,
                                 "false" => conn.video = false,
                                 _ => {
-                                    println!("Invalid video value! Atrribute parse failed. Value was: {:?}", value);
+                                    error!("Invalid video value! Atrribute parse failed. Value was: {:?}", value);
                                     return;
                                 }
                             }
@@ -305,7 +303,7 @@ async fn handle_command(
                                 "true" => conn.audio = true,
                                 "false" => conn.audio = false,
                                 _ => {
-                                    println!("Invalid audio value! Atrribute parse failed. Value was: {:?}", value);
+                                    error!("Invalid audio value! Atrribute parse failed. Value was: {:?}", value);
                                     return;
                                 }
                             }
@@ -314,7 +312,7 @@ async fn handle_command(
                         "AudioPayloadType" => conn.audio_payload_type = Some(value.to_string()),
                         "AudioIngestSSRC" => conn.audio_ingest_ssrc = Some(value.to_string()),
                         _ => {
-                            println!("Invalid attribute command. Attribute parsing failed. Key was {:?}, Value was {:?}", key, value)
+                            error!("Invalid attribute command. Attribute parsing failed. Key was {:?}, Value was {:?}", key, value)
                         }
                     }
                     // No actual response is expected but if we do not respond at all the client
@@ -324,7 +322,7 @@ async fn handle_command(
                         Ok(_) => {
                             return;
                         }
-                        Err(e) => println!(
+                        Err(e) => error!(
                             "Error sending to frame task (From: Handle Connection) {:?}",
                             e
                         ),
@@ -336,20 +334,20 @@ async fn handle_command(
             }
         }
         FtlCommand::Ping => {
-            // println!("Handling PING Command");
+            // info!("Handling PING Command");
             let resp = vec!["201\n".to_string()];
             match sender.send(FrameCommand::Send { data: resp }).await {
                 Ok(_) => {
                     return;
                 }
-                Err(e) => println!(
+                Err(e) => error!(
                     "Error sending to frame task (From: Handle Connection) {:?}",
                     e
                 ),
             }
         }
         _ => {
-            println!("Command not implemented yet. Tell GRVY to quit his day job");
+            warn!("Command not implemented yet. Tell GRVY to quit his day job");
             return;
         }
     }
@@ -366,36 +364,39 @@ fn generate_hmac() -> String {
 }
 
 fn generate_stream_key() -> Vec<u8> {
-    let stream_key: String = String::from_utf8(thread_rng().sample_iter(&Alphanumeric).take(32).collect()).expect("Failed to convert random key to string! Please open an issue and tell the devs to handle this!");
+    let stream_key: String = String::from_utf8(thread_rng()
+        .sample_iter(&Alphanumeric).take(32).collect())
+        .expect("Failed to convert random key to string! Please open an issue and tell the devs to handle this!");
     fs::write("hash", hex::encode(&stream_key)).expect("Unable to write file");
 
     stream_key.as_bytes().to_vec()
 }
 
 fn print_stream_key(stream_key: Vec<u8>) {
-    println!(
-        "Your stream key is: 77-{}",
+    info!(
+        // ANSI escape codes to color stream key output
+        "Your stream key is: \x1b[31;1;4m77-{}\x1b[0m",
         std::str::from_utf8(&stream_key).unwrap()
     );
 }
 
 pub fn read_stream_key(startup: bool) -> Vec<u8> {
     if startup {
-        let _ = match fs::read_to_string("hash") {
+        match fs::read_to_string("hash") {
             Err(_) => {
                 let stream_key = generate_stream_key();
-                println!("\nCould not read stream key. Re-generating...");
+                warn!("Could not read stream key. Re-generating...");
                 print_stream_key(stream_key.to_vec());
 
-                return stream_key;
+                stream_key
             }
             Ok(file) => {
-                println!("\nLoading existing stream key...");
+                info!("Loading existing stream key...");
 
                 let _ = match hex::decode(file) {
                     Err(_) => {
                         let stream_key = generate_stream_key();
-                        println!("Error decoding stream key. Re-generating...");
+                        warn!("Error decoding stream key. Re-generating...");
                         print_stream_key(stream_key.to_vec());
 
                         return stream_key;
@@ -406,7 +407,7 @@ pub fn read_stream_key(startup: bool) -> Vec<u8> {
                     }
                 };
             }
-        };
+        }
     } else {
         let file = fs::read_to_string("hash").unwrap();
         hex::decode(file).unwrap()
