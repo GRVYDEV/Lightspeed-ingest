@@ -388,7 +388,7 @@ pub fn read_stream_key(startup: bool) -> Vec<u8> {
                 warn!("Could not read stream key. Re-generating...");
                 print_stream_key(stream_key.to_vec());
 
-                return stream_key;
+                stream_key
             }
             Ok(file) => {
                 info!("Loading existing stream key...");
@@ -407,7 +407,7 @@ pub fn read_stream_key(startup: bool) -> Vec<u8> {
                     }
                 };
             }
-        };
+        }
     } else {
         let file = fs::read_to_string("hash").unwrap();
         hex::decode(file).unwrap()
