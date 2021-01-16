@@ -40,8 +40,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             None => SimpleLogger::new(LevelFilter::Info, Config::default()),
         },
     );
-    if let Some(path) = matches.value_of("log-file"){
-        if !path.is_empty(){
+    if let Some(path) = matches.value_of("log-file") {
+        if !path.is_empty() {
             loggers.push(WriteLogger::new(
                 LevelFilter::Info,
                 Config::default(),
