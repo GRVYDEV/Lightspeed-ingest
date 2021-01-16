@@ -40,18 +40,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             None => SimpleLogger::new(LevelFilter::Info, Config::default()),
         },
     );
-    match matches.value_of("log-file") {
-        Some(path) => {
-            if !path.is_empty() {
-                loggers.push(WriteLogger::new(
-                    LevelFilter::Info,
-                    Config::default(),
-                    File::create(path).unwrap(),
-                ))
-            } else {
-            }
+    if let Some(path) = matches.value_of("log-file"){
+        if !path.is_empty(){
+            loggers.push(WriteLogger::new(
+                LevelFilter::Info,
+                Config::default(),
+                File::create(path).unwrap(),
+            ))
         }
-        None => (),
     };
     let _ = CombinedLogger::init(loggers);
 
