@@ -149,7 +149,14 @@ After restarting OBS you should be able to see your service in the OBS settings 
 
 
 ### Stream Key
-We are no longer using a default streamkey! If you are still using one please pull from master on the Lightspeed-ingest repository. Now, by default on first time startup a new streamkey will be generated and output to the terminal for you. In order to regenerate this key simply delete the file it generates called `hash`. In a Docker context we will work to make the key reset process as easy as possible. Simply copy the key output in the terminal to OBS and you are all set! This key WILL NOT change unless the `hash` file is deleted.
+By default on first time startup a new stream key will be generated and output to the terminal for you. In order 
+to regenerate this key simply delete the file it generates called `hash`. Simply copy the key output in the terminal 
+to OBS and you are all set! This key WILL NOT change unless the `hash` file is deleted.
+
+You can assign a static key by passing `--stream-key mykey` or via environment variable `STREAM_KEY=mykey`. If you 
+assign it manually it will become prefixed with `77-` so the result will be `77-mykey`. You can verify this in the boot 
+logs.
+
 
 <img src="images/streamkey-example.png" alt="Streamkey example">
 
