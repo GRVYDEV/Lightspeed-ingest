@@ -236,7 +236,7 @@ async fn handle_command(
                 (Some(key), Some(_channel_id)) => {
                     //decode the client hash
                     let client_hash = hex::decode(key).expect("error with hash decode");
-                    let key = hmac::Key::new(hmac::HMAC_SHA512, &read_stream_key(false));
+                    let key = hmac::Key::new(hmac::HMAC_SHA512, &read_stream_key(false, Some("")));
                     //compare the two hashes to ensure they match
                     match hmac::verify(
                         &key,
@@ -380,32 +380,38 @@ fn print_stream_key(stream_key: Vec<u8>) {
     );
 }
 
-pub fn read_stream_key(startup: bool) -> Vec<u8> {
+pub fn read_stream_key(startup: bool, stream_key_env: Option<&str>) -> Vec<u8> {
     if startup {
+        if let Some(stream_key) = stream_key_env {
+            if !stream_key.is_empty() {
+                let key = stream_key.as_bytes().to_vec();
+                print_stream_key(key.to_vec());
+                fs::write("hash", hex::encode(&stream_key))
+                    .expect("Unable to write stream key to hash file");
+                return key;
+            }
+        }
         match fs::read_to_string("hash") {
             Err(_) => {
                 let stream_key = generate_stream_key();
                 warn!("Could not read stream key. Re-generating...");
                 print_stream_key(stream_key.to_vec());
-
                 stream_key
             }
             Ok(file) => {
                 info!("Loading existing stream key...");
-
-                let _ = match hex::decode(file) {
+                match hex::decode(file) {
                     Err(_) => {
                         let stream_key = generate_stream_key();
                         warn!("Error decoding stream key. Re-generating...");
                         print_stream_key(stream_key.to_vec());
-
-                        return stream_key;
+                        stream_key
                     }
                     Ok(stream_key) => {
                         print_stream_key(stream_key.to_vec());
-                        return stream_key;
+                        stream_key
                     }
-                };
+                }
             }
         }
     } else {

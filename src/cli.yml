@@ -10,6 +10,14 @@ args:
         value_name: HOSTNAME_OR_IP
         help: Specify which address to bind to (defaults to 0.0.0.0)
         takes_value: true
+
+    - stream-key:
+        short: k
+        long: stream-key
+        env: STREAM_KEY
+        value_name: STREAM_KEY
+        help: Optionally set a static Stream Key (will be prefixed with "77-")
+        takes_value: true
     
     # Optional path to the log file, creates a simplelog::WriteLogger
     - log-file:
