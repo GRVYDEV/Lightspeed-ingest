@@ -148,10 +148,9 @@ impl Connection {
                         //TODO: Determine what needs to happen here
                     }
                     //this command is where we tell the client what port to use
-                    //WARNING: This command does not work properly.
-                    //For some reason the client does not like the port we are sending and defaults to 65535 this is fine for now but will be fixed in the future
+                    //TODO: make configurable?
                     Some(FtlCommand::Dot) => {
-                        let resp_string = "200 hi. Use UDP port 65535\n".to_string();
+                        let resp_string = "200. Use UDP port 65535\n".to_string();
                         let mut resp = Vec::new();
                         resp.push(resp_string);
                         //tell the frame task to send our response
