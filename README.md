@@ -15,7 +15,7 @@
 <br />
 <p align="center">
   <p align="center">
-	NOTE: This repo has been deprecated in favor of a monorepo configuration. Please [see](https://github.com/GRVYDEV/Project-Lightspeed)
+	NOTE: This repo has been deprecated in favor of a monorepo configuration. Please (see)[https://github.com/GRVYDEV/Project-Lightspeed]
     A FTL handshake server written in Rust. This server listens on port 8084 and performs the FTL handshake with incoming connections
     <!-- <br /> -->
     <!-- <a href="https://github.com/GRVYDEV/Lightspeed-ingest"><strong>Explore the docs »</strong></a> -->
