@@ -3,7 +3,7 @@
     <img src="images/lightspeedlogo.svg" alt="Logo" width="150" height="150">
 </a>
 </p>
-  <h1 align="center">Project Lightspeed Ingest</h1>
+  <h1 align="center">Project Lightspeed Ingest [DEPRECATED]</h1>
 <div align="center">
   <a href="https://github.com/GRVYDEV/Lightspeed-ingest/stargazers"><img src="https://img.shields.io/github/stars/GRVYDEV/Lightspeed-ingest" alt="Stars Badge"/></a>
 <a href="https://github.com/GRVYDEV/Lightspeed-ingest/network/members"><img src="https://img.shields.io/github/forks/GRVYDEV/Lightspeed-ingest" alt="Forks Badge"/></a>
@@ -15,6 +15,7 @@
 <br />
 <p align="center">
   <p align="center">
+	NOTE: This repo has been deprecated in favor of a monorepo configuration. Please [see](https://github.com/GRVYDEV/Project-Lightspeed)
     A FTL handshake server written in Rust. This server listens on port 8084 and performs the FTL handshake with incoming connections
     <!-- <br /> -->
     <!-- <a href="https://github.com/GRVYDEV/Lightspeed-ingest"><strong>Explore the docs »</strong></a> -->
